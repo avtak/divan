@@ -1,0 +1,10 @@
+[Unit]
+Description=Sync divan every 5 minutes
+
+[Timer]
+OnStartupSec=1min
+OnUnitInactiveSec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

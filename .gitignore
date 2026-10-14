@@ -1,0 +1,32 @@
+# Everything private lives in one folder. Never tracked, so this repo is safe to push.
+private/
+# Keys and tokens belong in a password manager. scripts/lint.py refuses a staged one too.
+.env
+.env.*
+
+# divan-sync reads this and deletes it. It must never be committed.
+# divan-sync takes only the FIRST LINE. For a commit message with a body,
+# write a .commit-*.txt here and use `git commit -F`.
+.sync-message
+.commit-*.txt
+.DEADLINES.md.*.tmp
+diary/.*.tmp
+
+# Skill links: per machine, never committed. `skills/` is the one source.
+# setup.sh creates them.
+.claude/skills
+.agents/skills
+# Claude Code worktrees are nested checkouts. Never commit one.
+.claude/worktrees/
+.claude/settings.local.json
+# Per-machine trace of Antigravity hook firings (scripts/hooks/*.py write it).
+.agents/hooks.log
+
+# Python build artefacts
+__pycache__/
+*.pyc
+
+# OS junk
+Thumbs.db
+desktop.ini
+.DS_Store

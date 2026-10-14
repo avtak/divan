@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# pre-commit: run scripts/lint.py. A failure refuses the commit and prints the file:line.
+#
+# Enable once per clone (setup.sh does it):   git config core.hooksPath scripts/hooks
+set -eu
+
+py=$(command -v python3) || { echo "pre-commit: python3 not found" >&2; exit 1; }
+"$py" scripts/lint.py --quiet || exit 1

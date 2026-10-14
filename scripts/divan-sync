@@ -1,0 +1,216 @@
+#!/bin/bash
+# divan-sync: pull, commit, push this repo. Runs on the laptop (a user timer) and, optionally,
+# on a server where an agent writes the same repo (a watcher). See scripts/AGENTS.md.
+# Timid by design: aborts and logs rather than guessing. Never force, never reset --hard.
+set -uo pipefail
+
+# Every setting is an environment variable; the systemd units in scripts/systemd/ set them.
+REPO="${DIVAN_REPO:-$(cd "$(dirname "$0")/.." && pwd)}"
+LOG="${DIVAN_LOG:-$HOME/.local/state/divan-sync.log}"
+ROLE="${DIVAN_ROLE:-laptop}"                      # laptop | server
+BOT_NAME="${DIVAN_BOT_NAME-}"                     # empty = use the clone's own git identity
+BOT_EMAIL="${DIVAN_BOT_EMAIL-}"
+PREFIX="${DIVAN_PREFIX:-$ROLE}"                   # auto-commit message: "<prefix>: sync <files>"
+SETTLE="${DIVAN_SETTLE:-0}"                       # seconds a changed file must sit untouched before it is committed
+NOTIFY="${DIVAN_NOTIFY:-0}"                       # 1 = desktop notification on ABORT (laptop)
+# Rule files the laptop timer never commits on its own (AGENTS.md "Rule files"), as git pathspecs.
+read -r -a RULES <<< "${DIVAN_RULES:-:(glob)**/AGENTS.md skills ABOUT_ME.md README.md START_HERE.md}"
+
+mkdir -p "$(dirname "$LOG")"
+
+log() { printf '%s %s\n' "$(date -Is)" "$*" >> "$LOG"; }
+
+# One notification per distinct problem, not one every run.
+abort() {
+  log "ABORT $*"
+  if [ "$NOTIFY" = 1 ] && command -v notify-send >/dev/null; then
+    local state="${LOG}.last-abort"
+    if [ "$(cat "$state" 2>/dev/null)" != "$*" ]; then
+      notify-send -u critical "divan sync stopped" "$* — skill repo-sync has the fix"
+      printf '%s' "$*" > "$state"
+    fi
+  fi
+  exit 1
+}
+ok() { rm -f "${LOG}.last-abort"; }
+
+# True when a Claude Code or Antigravity process works in $1 or below it (sets AGENT_PID).
+agent_in() {
+  local p
+  for p in /proc/[0-9]*; do
+    case "$(cat "$p/comm" 2>/dev/null)" in claude|agy|antigravity|Antigravity) ;; *) continue ;; esac
+    case "$(readlink "$p/cwd" 2>/dev/null)" in "$1"|"$1"/*) AGENT_PID=${p#/proc/}; return 0 ;; esac
+  done
+  return 1
+}
+
+cd "$REPO" || { log "FATAL cannot cd to $REPO"; exit 1; }
+
+# The watcher and the timer can fire together; the second run waits its turn, then finds nothing.
+exec 9>"$(git rev-parse --git-dir)/divan-sync.lock"
+flock -w 120 9 || { log "SKIP another divan-sync still running"; exit 0; }
+
+# A person or an agent is in the middle of something: leave the repo alone.
+gd=$(git rev-parse --git-dir)
+if [ -d "$gd/rebase-merge" ] || [ -d "$gd/rebase-apply" ] || [ -f "$gd/MERGE_HEAD" ] || [ -f "$gd/CHERRY_PICK_HEAD" ]; then
+  abort "rebase/merge in progress in $REPO, finish it by hand"
+fi
+unmerged=$(git diff --name-only --diff-filter=U | head -3 | tr '\n' ' ')
+if [ -n "$unmerged" ]; then
+  abort "unresolved conflict in ${unmerged}- pick a version, remove the <<<<<<< markers, git add, then git stash drop"
+fi
+if [ -f "$gd/index.lock" ]; then
+  log "SKIP index.lock present (git busy)"; exit 0
+fi
+
+# Laptop timer: while an agent session works in the repo, leave its files alone. The session
+# syncs itself (AGENTS.md: pull at the start, push when done); this timer catches up after.
+# `make sync` sets DIVAN_MANUAL=1 and always runs. Why: a run in the middle of a session
+# stashed and re-applied the agent's open edits.
+if [ "$ROLE" = laptop ] && [ "${DIVAN_MANUAL:-0}" != 1 ] && agent_in "$PWD"; then
+  log "SKIP agent session active (pid $AGENT_PID)"; exit 0
+fi
+
+branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "?")
+[ "$branch" = "main" ] || abort "not on main (on '$branch')"
+
+# Offline is not an error: try again next run, no notification.
+if ! git fetch -q origin >>"$LOG" 2>&1; then
+  log "SKIP fetch failed (offline?)"; exit 0
+fi
+
+# Laptop: remove an agent worktree once its work is in main (no uncommitted change, not locked
+# by a running session, every commit patch-equal to one in origin/main). Never merges: one with
+# work not in main stays and gets a HOLD line, and its agent or the owner decides.
+if [ "$ROLE" = laptop ]; then
+  wt=""; head=""; br=""; locked=0
+  while IFS= read -r line; do
+    case "$line" in
+      "worktree "*) wt=${line#worktree }; head=""; br=""; locked=0 ;;
+      "HEAD "*) head=${line#HEAD } ;;
+      "branch "*) br=${line#branch refs/heads/} ;;
+      locked*) locked=1 ;;
+      "")
+        case "$wt" in "$PWD"/.claude/worktrees/*) ;; *) continue ;; esac
+        name=${wt##*/}
+        if [ "$locked" = 1 ] || agent_in "$wt"; then
+          :
+        elif [ -n "$(git -C "$wt" status --porcelain 2>/dev/null)" ]; then
+          log "HOLD worktree $name has uncommitted changes"
+        elif n=$(git cherry origin/main "$head" 2>/dev/null | grep -c '^+'); [ "$n" -gt 0 ]; then
+          log "HOLD worktree $name has $n commit(s) not in main"
+        elif git worktree remove "$wt" >>"$LOG" 2>&1; then
+          [ -n "$br" ] && git branch -D "$br" >/dev/null 2>&1
+          log "CLEAN removed worktree $name${br:+ and branch $br} (its work is in main)"
+        fi ;;
+    esac
+  done < <(git worktree list --porcelain; echo)
+  # Local agent branches no worktree uses, whose every commit is already in main.
+  used=$(git worktree list --porcelain | sed -n 's|^branch refs/heads/||p')
+  while IFS= read -r b; do
+    printf '%s\n' "$used" | grep -qxF "$b" && continue
+    [ "$(git cherry origin/main "$b" 2>/dev/null | grep -c '^+')" = 0 ] || continue
+    git branch -D "$b" >/dev/null 2>&1 && log "CLEAN deleted branch $b (its work is in main)"
+  done < <(git for-each-ref --format='%(refname:short)' refs/heads/claude/ 'refs/heads/worktree-*')
+fi
+
+# Settle age is measured before the pull: --autostash re-applies uncommitted edits and stamps
+# every changed file with the current time, so measured after it the age is always 0 s and the
+# laptop would never commit.
+newest=0
+if [ "$SETTLE" -gt 0 ]; then
+  while IFS= read -r -d '' f; do
+    [ -e "$f" ] || continue
+    t=$(stat -c %Y -- "$f"); [ "$t" -gt "$newest" ] && newest=$t
+  done < <(git ls-files -z -m -o --exclude-standard)
+fi
+
+# Rebase only when origin has something new: even a no-op rebase stashes and rewrites every
+# changed file, under the feet of whatever editor has it open.
+if ! git merge-base --is-ancestor origin/main HEAD; then
+  stashes_before=$(git stash list | wc -l)
+  if ! git rebase --autostash origin/main >>"$LOG" 2>&1; then
+    git rebase --abort >>"$LOG" 2>&1
+    abort "pull/rebase failed - rebase aborted, tree left untouched"
+  fi
+  # If uncommitted edits clash with what came in, git parks them in the stash and carries on.
+  # That is safe but silent; say so, and stop before committing a tree without them.
+  if [ "$(git stash list | wc -l)" -gt "$stashes_before" ]; then
+    abort "uncommitted edits clashed with incoming changes - both versions are marked with <<<<<<< in the file, and your edits are also in 'git stash list'"
+  fi
+fi
+
+msg=""
+if [ -f .sync-message ]; then
+  msg=$(head -1 .sync-message)
+fi
+
+if [ -n "$(git status --porcelain)" ]; then
+  # Settle: only commit once every changed file has been quiet for SETTLE seconds, so a file
+  # someone is still editing is not committed half-done. A .sync-message means "commit now".
+  if [ "$SETTLE" -gt 0 ] && [ -z "$msg" ]; then
+    age=$(( $(date +%s) - newest ))
+    if [ "$age" -lt "$SETTLE" ]; then
+      log "WAIT changes still settling (${age}s < ${SETTLE}s), not committed yet"
+    else
+      SETTLED=1
+    fi
+  else
+    SETTLED=1
+  fi
+
+  if [ "${SETTLED:-0}" = 1 ]; then
+    rm -f .sync-message
+    git add -A
+
+    # Hold (laptop only, no .sync-message): an agent's edit to a rule file may still be waiting
+    # for the owner's yes, so the timer never commits one. Everything else goes through. A hand
+    # commit or a .sync-message releases the hold; the server (SETTLE=0) never holds.
+    if [ "$SETTLE" -gt 0 ] && [ -z "$msg" ]; then
+      held=$(git diff --cached --name-only -- "${RULES[@]}" | tr '\n' ' ')
+      if [ -n "$held" ]; then
+        git reset -q -- "${RULES[@]}" >>"$LOG" 2>&1
+        log "HOLD rule files not committed (commit by hand or write .sync-message): ${held}"
+      fi
+    fi
+
+    if git diff --cached -U0 | grep -qEi 'BEGIN [A-Z ]*PRIVATE KEY|ssh-(rsa|ed25519) AAAA|ghp_[A-Za-z0-9]{20}|xox[baprs]-|sk-[A-Za-z0-9]{20}|(api[_-]?key|secret|password|token)[[:space:]]*[:=][[:space:]]*[A-Za-z0-9_/+-]{20}'; then
+      git reset -q >>"$LOG" 2>&1
+      abort "possible secret in staged changes - unstaged, nothing pushed"
+    fi
+    if git diff --cached -U0 | grep -qE '^\+(<<<<<<< |>>>>>>> )'; then
+      git reset -q >>"$LOG" 2>&1
+      abort "conflict markers in staged changes - unstaged, nothing pushed"
+    fi
+
+    if git diff --cached --quiet; then
+      SETTLED=0     # everything left was held: nothing to commit this run
+    fi
+  fi
+
+  if [ "${SETTLED:-0}" = 1 ]; then
+    if [ -z "$msg" ]; then
+      files=$(git diff --cached --name-only | head -3 | tr '\n' ' ')
+      msg="${PREFIX}: sync ${files}"
+    fi
+
+    ident=()
+    [ -n "$BOT_NAME" ] && ident=(-c user.name="$BOT_NAME" -c user.email="${BOT_EMAIL:-$PREFIX@localhost}")
+    if ! git "${ident[@]}" commit -q -m "$msg" >>"$LOG" 2>&1; then
+      git reset -q >>"$LOG" 2>&1
+      abort "commit failed (pre-commit lint?) - unstaged, see $LOG"
+    fi
+    log "committed: $msg"
+  fi
+fi
+
+# Push whatever is ahead, including commits made by hand or by an agent that never pushed.
+ahead=$(git rev-list --count origin/main..HEAD)
+if [ "$ahead" -eq 0 ]; then
+  log "clean, nothing to push"; ok; exit 0
+fi
+if git push -q >>"$LOG" 2>&1; then
+  log "pushed $ahead commit(s)"; ok
+else
+  abort "push failed - $ahead commit(s) local only, will retry next run"
+fi

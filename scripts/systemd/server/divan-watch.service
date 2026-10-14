@@ -1,0 +1,15 @@
+[Unit]
+Description=Watch divan and sync it to git once changes settle
+
+[Service]
+Type=simple
+# Replace @REPO@ with the clone's absolute path before installing.
+Environment=DIVAN_REPO=@REPO@
+Environment=DIVAN_ROLE=server
+Environment=DIVAN_BOT_NAME=divan server
+ExecStart=@REPO@/scripts/divan-watch
+Restart=always
+RestartSec=15
+
+[Install]
+WantedBy=default.target

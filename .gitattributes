@@ -1,0 +1,8 @@
+* text=auto eol=lf
+*.png binary
+*.pdf binary
+*.jpg binary
+# Append-only files that two machines write at the top (scripts/AGENTS.md "Who writes what").
+# On a pull, git keeps both sides' new lines instead of stopping with a conflict.
+*_log.md merge=union
+diary/*.md merge=union

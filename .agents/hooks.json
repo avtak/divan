@@ -1,0 +1,30 @@
+{
+  "divan-guard": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ../scripts/hooks/guard.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "divan-context": {
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "python3 ../scripts/hooks/context.py --antigravity",
+        "timeout": 30
+      },
+      {
+        "type": "command",
+        "command": "python3 ../scripts/hooks/handover.py --antigravity",
+        "timeout": 5
+      }
+    ]
+  }
+}

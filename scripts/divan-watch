@@ -1,0 +1,26 @@
+#!/bin/bash
+# divan-watch: run divan-sync once changes in the repo settle. For a server where an agent
+# writes the repo (scripts/systemd/server/). Excludes .git: the sync's own commit writes
+# there, and without the exclusion that would re-trigger the watcher forever.
+set -uo pipefail
+
+REPO="${DIVAN_REPO:-$(cd "$(dirname "$0")/.." && pwd)}"
+LOG="${DIVAN_LOG:-$HOME/.local/state/divan-sync.log}"
+DEBOUNCE="${DIVAN_DEBOUNCE:-120}"
+EXCLUDE='(^|/)\.git(/|$)'
+EVENTS='modify,create,delete,move'
+
+mkdir -p "$(dirname "$LOG")"
+log() { printf '%s %s\n' "$(date -Is)" "$*" >> "$LOG"; }
+
+command -v inotifywait >/dev/null 2>&1 || { log "FATAL inotifywait missing (install inotify-tools)"; exit 1; }
+[ -d "$REPO" ] || { log "FATAL $REPO missing"; exit 1; }
+
+log "watcher started, debounce ${DEBOUNCE}s"
+
+while true; do
+  inotifywait -r -q -e "$EVENTS" --exclude "$EXCLUDE" "$REPO" >/dev/null 2>&1 || { sleep 5; continue; }
+  while inotifywait -r -q -t "$DEBOUNCE" -e "$EVENTS" --exclude "$EXCLUDE" "$REPO" >/dev/null 2>&1; do :; done
+  log "changes settled, running sync"
+  "$REPO/scripts/divan-sync"
+done

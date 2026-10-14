@@ -1,0 +1,12 @@
+[Unit]
+Description=Sync divan with git on the laptop (pull always; commit after 10 quiet minutes; push)
+
+[Service]
+Type=oneshot
+# setup.sh --sync replaces @REPO@ with the clone's absolute path.
+Environment=DIVAN_REPO=@REPO@
+Environment=DIVAN_LOG=%h/.local/state/divan-sync.log
+Environment=DIVAN_ROLE=laptop
+Environment=DIVAN_SETTLE=600
+Environment=DIVAN_NOTIFY=1
+ExecStart=@REPO@/scripts/divan-sync

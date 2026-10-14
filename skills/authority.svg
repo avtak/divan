@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="404" viewBox="0 0 680 404" role="img" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <title>Authority order in divan</title>
+  <desc>Four ranked file locations that win in order when they disagree, and a fifth item, AI inference, that never outranks any file.</desc>
+  <rect x="0" y="0" width="680" height="404" fill="#FAFAF8"/>
+  <text x="40" y="32" font-size="12" font-weight="600" fill="#5F5E5A">authority ladder · when two sources disagree, the lower rank number wins</text>
+
+  <!-- Rank 0 -->
+  <rect x="40" y="44" width="596" height="54" rx="5" fill="#E1F5EE" stroke="#1D9E75"/>
+  <text x="64" y="76" font-size="15" font-weight="700" fill="#04342C" text-anchor="middle">0</text>
+  <text x="92" y="68" font-size="14" font-weight="600" fill="#04342C">DEADLINES.md</text>
+  <text x="92" y="86" font-size="12" fill="#0F6E56">every dated obligation · enforced by scripts/lint.py (no date restated elsewhere)</text>
+
+  <!-- Rank 1 -->
+  <rect x="40" y="110" width="596" height="54" rx="5" fill="#F1EFE8" stroke="#888780"/>
+  <text x="64" y="142" font-size="15" font-weight="700" fill="#2C2C2A" text-anchor="middle">1</text>
+  <text x="92" y="134" font-size="14" font-weight="600" fill="#2C2C2A">your fact sheets ("Standing facts")</text>
+  <text x="92" y="152" font-size="12" fill="#5F5E5A">titles, dates, numbers: each fact in exactly one file, named in AGENTS.md</text>
+
+  <!-- Rank 2 -->
+  <rect x="40" y="176" width="596" height="54" rx="5" fill="#F1EFE8" stroke="#888780"/>
+  <text x="64" y="208" font-size="15" font-weight="700" fill="#2C2C2A" text-anchor="middle">2</text>
+  <text x="92" y="200" font-size="14" font-weight="600" fill="#2C2C2A">ABOUT_ME.md</text>
+  <text x="92" y="218" font-size="12" fill="#5F5E5A">the person (working style lives in skill working-terms)</text>
+
+  <!-- Rank 3 -->
+  <rect x="40" y="242" width="596" height="54" rx="5" fill="#F1EFE8" stroke="#888780"/>
+  <text x="64" y="274" font-size="15" font-weight="700" fill="#2C2C2A" text-anchor="middle">3</text>
+  <text x="92" y="266" font-size="14" font-weight="600" fill="#2C2C2A">everything else: skills/ · nested AGENTS.md · *_log.md</text>
+  <text x="92" y="284" font-size="12" fill="#5F5E5A">workflows and history: point to ranks 0 to 2, never copy facts or numbers</text>
+
+  <!-- AI Inference -->
+  <rect x="40" y="322" width="596" height="54" rx="5" fill="#FAECE7" stroke="#D85A30"/>
+  <text x="64" y="354" font-size="15" font-weight="700" fill="#4A1B0C" text-anchor="middle">✕</text>
+  <text x="92" y="346" font-size="14" font-weight="600" fill="#4A1B0C">anything an AI inferred, remembered, or summarised (MEMORY.md, USER.md)</text>
+  <text x="92" y="364" font-size="12" fill="#993C1D">never outranks a file at any rank: if it conflicts with a file, delete the memory entry</text>
+</svg>

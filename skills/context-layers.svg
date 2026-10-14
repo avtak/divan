@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="460" viewBox="0 0 680 460" role="img" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <title>How context loads in divan</title>
+  <desc>Five loading layers, from Layer 0 runtime hooks and Layer 1 always-loaded AGENTS.md and skill frontmatter down to Layer 4 repo files read on demand.</desc>
+  <rect x="0" y="0" width="680" height="460" fill="#FAFAF8"/>
+
+  <!-- Layer 0: Hooks -->
+  <text x="40" y="30" font-size="12" font-weight="600" fill="#5F5E5A">0 · runtime hooks · executed automatically before turn 0, before commands &amp; after edits</text>
+  <rect x="40" y="40" width="288" height="54" rx="5" fill="#FAEEDA" stroke="#D89630"/>
+  <text x="184" y="64" font-size="13.5" font-weight="600" fill="#412402" text-anchor="middle">hooks/context.py + handover.py</text>
+  <text x="184" y="82" font-size="11.5" fill="#854F0B" text-anchor="middle">deadlines at start · size warning</text>
+  <rect x="348" y="40" width="288" height="54" rx="5" fill="#FAEEDA" stroke="#D89630"/>
+  <text x="492" y="64" font-size="13.5" font-weight="600" fill="#412402" text-anchor="middle">hooks/guard.py + coupled.py</text>
+  <text x="492" y="82" font-size="11.5" fill="#854F0B" text-anchor="middle">blocks dangerous commands · names docs after edit</text>
+
+  <!-- Layer 1: Always in context -->
+  <text x="40" y="122" font-size="12" font-weight="600" fill="#5F5E5A">1 · always in context · every message, every session, all runtimes</text>
+  <rect x="40" y="132" width="288" height="54" rx="5" fill="#F1EFE8" stroke="#888780"/>
+  <text x="184" y="156" font-size="13.5" font-weight="600" fill="#2C2C2A" text-anchor="middle">AGENTS.md (~5k chars)</text>
+  <text x="184" y="174" font-size="11.5" fill="#5F5E5A" text-anchor="middle">read natively; no CLAUDE.md copies</text>
+  <rect x="348" y="132" width="288" height="54" rx="5" fill="#F1EFE8" stroke="#888780"/>
+  <text x="492" y="156" font-size="13.5" font-weight="600" fill="#2C2C2A" text-anchor="middle">5 skill descriptions (~2k chars)</text>
+  <text x="492" y="174" font-size="11.5" fill="#5F5E5A" text-anchor="middle">YAML frontmatter (name + description only)</text>
+
+  <!-- Layer 2: Skill Body -->
+  <text x="40" y="214" font-size="12" font-weight="600" fill="#5F5E5A">2 · when one skill triggers (user-invoked or model-invoked)</text>
+  <rect x="40" y="224" width="596" height="54" rx="5" fill="#EEEDFE" stroke="#7F77DD"/>
+  <text x="338" y="248" font-size="13.5" font-weight="600" fill="#26215C" text-anchor="middle">that skill's SKILL.md body</text>
+  <text x="338" y="266" font-size="11.5" fill="#534AB7" text-anchor="middle">loaded on demand · the other 4 skills stay closed</text>
+
+  <!-- Layer 3: Sibling files -->
+  <text x="40" y="306" font-size="12" font-weight="600" fill="#5F5E5A">3 · only when the triggered skill body points at it</text>
+  <rect x="40" y="316" width="596" height="54" rx="5" fill="#E1F5EE" stroke="#1D9E75"/>
+  <text x="338" y="340" font-size="13.5" font-weight="600" fill="#04342C" text-anchor="middle">sibling files &amp; templates</text>
+  <text x="338" y="358" font-size="11.5" fill="#0F6E56" text-anchor="middle">rubrics, checklists, templates, scripts</text>
+
+  <!-- Layer 4: Repo files -->
+  <text x="40" y="398" font-size="12" font-weight="600" fill="#5F5E5A">4 · only when the agent chooses to read (or enters a nested folder)</text>
+  <rect x="40" y="408" width="596" height="40" rx="5" fill="#E1F5EE" stroke="#1D9E75"/>
+  <text x="338" y="426" font-size="13" font-weight="600" fill="#04342C" text-anchor="middle">ABOUT_ME · logs · diary · nested AGENTS.md (scripts/)</text>
+  <text x="338" y="442" font-size="11" fill="#0F6E56" text-anchor="middle">a mount gives access, not awareness · nested AGENTS.md: Hermes &amp; Claude Code auto-load</text>
+</svg>
