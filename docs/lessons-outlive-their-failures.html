@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="img/divan.svg" type="image/svg+xml">
+<title>Lessons Outlive Their Failures</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;800&family=Atkinson+Hyperlegible+Mono:wght@400;600&display=swap">
+<style>
+/* One readable column like the other divan explainers. The centre is a step-through of a lesson's life. */
+:root {
+  --bg: #f3f5f8; --panel: #ffffff; --ink: #18212e; --muted: #566274; --line: #d3d9e2;
+  --accent: #b86a00; --accent-soft: #fbecd6;
+  --req: #2f5f9e; --req-top: #7fa6d8; --req-side: #23497a; --req-soft: #dde8f6;
+  --blk: #b3541e; --blk-top: #e59a6a; --blk-side: #8a3d12; --blk-soft: #f6e2d6;
+  --base: #c9d0da; --base-top: #e4e8ee; --base-side: #a9b2bf; --shadow: rgba(24,33,46,.16);
+  --bad: #c43d32;
+  --f-body: "Atkinson Hyperlegible Next", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "Atkinson Hyperlegible Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11161d; --panel: #18202a; --ink: #e6ebf2; --muted: #9aa7b8; --line: #2c3746;
+    --accent: #f0a640; --accent-soft: #3a2a12;
+    --req: #6f9fe0; --req-top: #3d5f8f; --req-side: #213a5c; --req-soft: #1a2a40;
+    --blk: #ec9466; --blk-top: #8f4f2b; --blk-side: #5a2d14; --blk-soft: #3a2316;
+    --base: #3a4554; --base-top: #4a5666; --base-side: #2a333f; --shadow: rgba(0,0,0,.45);
+    --bad: #f07a6e;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11161d; --panel: #18202a; --ink: #e6ebf2; --muted: #9aa7b8; --line: #2c3746;
+  --accent: #f0a640; --accent-soft: #3a2a12;
+  --req: #6f9fe0; --req-top: #3d5f8f; --req-side: #213a5c; --req-soft: #1a2a40;
+  --blk: #ec9466; --blk-top: #8f4f2b; --blk-side: #5a2d14; --blk-soft: #3a2316;
+  --base: #3a4554; --base-top: #4a5666; --base-side: #2a333f; --shadow: rgba(0,0,0,.45);
+  --bad: #f07a6e;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 17px; line-height: 1.55; }
+.wrap { max-width: 780px; margin: 0 auto; padding: 28px 16px 56px; display: grid; gap: 40px; }
+h1, h2 { text-wrap: balance; line-height: 1.2; margin: 0; }
+h1 { font-size: clamp(30px, 6vw, 44px); font-weight: 800; letter-spacing: -0.01em; }
+h2 { font-size: 24px; font-weight: 800; }
+p { margin: 0; max-width: 65ch; }
+ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+a { color: var(--req); }
+code { font-family: var(--f-mono); font-size: 0.88em; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; overflow-wrap: anywhere; }
+.eyebrow { font-family: var(--f-mono); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+section { display: grid; gap: 14px; }
+.answer { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 6px; padding: 16px 18px; display: grid; gap: 8px; }
+
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 10px; }
+.card-head, .card-foot { display: flex; justify-content: space-between; gap: 12px; font-family: var(--f-mono); font-size: 13px; color: var(--muted); }
+.card-head strong { color: var(--ink); font-weight: 600; }
+.readout { text-align: right; color: var(--ink); }
+svg.fig { width: 100%; height: auto; display: block; }
+.fig text { font-family: var(--f-body); fill: var(--ink); }
+.fig .lbl { font-size: 19px; font-weight: 800; }
+.fig .sub { font-size: 15px; fill: var(--muted); }
+.fig .mono { font-family: var(--f-mono); font-size: 14px; fill: var(--muted); }
+.fig .num { font-family: var(--f-mono); font-size: 15px; font-weight: 600; fill: #fff; }
+.fig .tiny { font-family: var(--f-mono); font-size: 13px; font-weight: 600; }
+.part { transition: opacity .35s ease; }
+.fig.stepping .part { opacity: .4; }
+.fig.stepping .part.on { opacity: 1; }
+.part .ring { fill: none; stroke: var(--accent); stroke-width: 4; opacity: 0; transition: opacity .35s ease; }
+.part.on .ring { opacity: 1; }
+.track { fill: none; stroke: var(--base-side); stroke-width: 12; stroke-linecap: round; stroke-linejoin: round; }
+.track-dash { fill: none; stroke: var(--base-top); stroke-width: 2.5; stroke-dasharray: 2 12; stroke-linecap: round; }
+.stepper { display: grid; gap: 10px; }
+.steptext { min-height: 5.6em; }
+.steptext b { display: block; margin-bottom: 2px; }
+.controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+button { font: inherit; font-size: 15px; font-weight: 600; padding: 8px 16px; border-radius: 6px; border: 1.5px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--panel); }
+button:focus-visible { outline: 3px solid var(--req); outline-offset: 2px; }
+button:disabled { opacity: .45; cursor: default; }
+.caption { font-size: 15px; color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 14px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+@media (max-width: 560px) { .fig .lbl { font-size: 24px; } .fig .sub { font-size: 19px; } .fig .mono { font-size: 18px; } }
+
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+th { font-weight: 600; color: var(--muted); font-size: 14px; }
+td.n { font-family: var(--f-mono); white-space: nowrap; }
+.tag { display: inline-block; font-family: var(--f-mono); font-size: 12px; font-weight: 600; padding: 1px 7px; border-radius: 10px; white-space: nowrap; }
+.tag.req { background: var(--req-soft); color: var(--req); }
+.tag.blk { background: var(--blk-soft); color: var(--blk); }
+.tag.rep { background: var(--accent-soft); color: var(--accent); }
+.cite { background: var(--panel); border: 1px dashed var(--line); border-radius: 8px; padding: 14px 16px; display: grid; gap: 8px; font-size: 15px; }
+dl { margin: 0; display: grid; gap: 10px; }
+dt { font-weight: 800; }
+dd { margin: 0; color: var(--muted); }
+footer { font-size: 14px; color: var(--muted); display: grid; gap: 6px; border-top: 1px solid var(--line); padding-top: 16px; }
+@media (prefers-reduced-motion: reduce) { .part, .part .ring { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header style="display:grid;gap:10px">
+  <div class="eyebrow">divan · harness study · 23.10.2026</div>
+  <h1>Lessons Outlive Their Failures</h1>
+  <p>What a six-week study of this harness found, and what divan changed because of it.</p>
+</header>
+
+<section class="answer" aria-label="Short answer">
+  <p><strong>Some lessons may no longer be needed, and stale documentation keeps coming back.</strong> A lesson is a rule or a check added after an agent mistake. On a current model, three of four replayed past failures did not happen even without their lesson. Stale documentation (<em>drift</em>) was the largest failure class: 48 of 118. One LLM audit found only about half of it.</p>
+  <p>So divan now gives every lesson a model and a re-test date, replays lessons to find the ones that can retire, and adds code checks where drift slipped through.</p>
+</section>
+
+<section aria-label="Figure: the life of a lesson">
+  <div class="card">
+    <div class="card-head"><span>Fig 1</span><strong>The life of a lesson, after the study</strong></div>
+
+    <svg class="fig" id="fig" viewBox="0 0 600 470" role="img" aria-labelledby="figtitle figdesc">
+      <title id="figtitle">The life of a lesson in divan</title>
+      <desc id="figdesc">Six stations on a loop. Top row: a failure, the admission of a lesson with a prediction, and a row in the lesson register. Bottom row, right to left: enforcement by a code check or a rule, a replay with and without the lesson, and the decision to keep or retire it.</desc>
+      <defs>
+        <filter id="sh" x="-20%" y="-20%" width="140%" height="170%"><feDropShadow dx="0" dy="6" stdDeviation="4" flood-color="var(--shadow)" flood-opacity="1"/></filter>
+      </defs>
+
+      <!-- the loop the stations stand on -->
+      <path class="track" d="M100 150 H500 V340 H100 Z"/>
+      <path class="track-dash" d="M100 150 H500 V340 H100 Z"/>
+      <text x="300" y="276" text-anchor="middle" class="mono">a lesson moves clockwise</text>
+      <path d="M286 288 h28 l-6 -5 m6 5 l-6 5" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <!-- 1 Failure: a page with a red cross -->
+      <g class="part" data-step="1">
+        <rect x="28" y="88" width="152" height="132" rx="12" class="ring"/>
+        <g filter="url(#sh)">
+          <polygon points="38,126 52,110 176,110 162,126" fill="var(--req-top)"/>
+          <polygon points="162,126 176,110 176,174 162,190" fill="var(--req-side)"/>
+          <rect x="38" y="126" width="124" height="64" rx="3" fill="var(--req)"/>
+        </g>
+        <path d="M82 134 h30 l10 10 v40 h-40 z" fill="var(--panel)"/>
+        <line x1="88" y1="148" x2="110" y2="148" stroke="var(--base)" stroke-width="3" stroke-linecap="round"/>
+        <line x1="88" y1="158" x2="114" y2="158" stroke="var(--base)" stroke-width="3" stroke-linecap="round"/>
+        <path d="M98 166 l12 12 m0 -12 l-12 12" stroke="var(--bad)" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="54" cy="142" r="11" fill="var(--req-side)"/><text x="54" y="147" text-anchor="middle" class="num">1</text>
+        <text x="100" y="242" text-anchor="middle" class="lbl">Failure</text>
+      </g>
+
+      <!-- 2 Admit: a ticket with a check mark -->
+      <g class="part" data-step="2">
+        <rect x="228" y="88" width="152" height="132" rx="12" class="ring"/>
+        <g filter="url(#sh)">
+          <polygon points="238,126 252,110 376,110 362,126" fill="var(--req-top)"/>
+          <polygon points="362,126 376,110 376,174 362,190" fill="var(--req-side)"/>
+          <rect x="238" y="126" width="124" height="64" rx="3" fill="var(--req)"/>
+        </g>
+        <path d="M270 140 h60 a6 6 0 0 0 0 12 v0 a6 6 0 0 0 0 12 v8 h-60 v-8 a6 6 0 0 0 0 -12 a6 6 0 0 0 0 -12 z" fill="var(--panel)"/>
+        <path d="M283 158 l7 7 l13 -14" fill="none" stroke="var(--req)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="254" cy="142" r="11" fill="var(--req-side)"/><text x="254" y="147" text-anchor="middle" class="num">2</text>
+        <text x="300" y="242" text-anchor="middle" class="lbl">Admit</text>
+      </g>
+
+      <!-- 3 Register: a tray of cards -->
+      <g class="part" data-step="3">
+        <rect x="428" y="88" width="152" height="132" rx="12" class="ring"/>
+        <g filter="url(#sh)">
+          <polygon points="438,126 452,110 576,110 562,126" fill="var(--req-top)"/>
+          <polygon points="562,126 576,110 576,174 562,190" fill="var(--req-side)"/>
+          <rect x="438" y="126" width="124" height="64" rx="3" fill="var(--req)"/>
+        </g>
+        <rect x="474" y="136" width="52" height="34" rx="3" fill="var(--base-top)"/>
+        <rect x="470" y="142" width="60" height="34" rx="3" fill="var(--base)"/>
+        <rect x="466" y="148" width="68" height="34" rx="3" fill="var(--panel)"/>
+        <line x1="474" y1="160" x2="512" y2="160" stroke="var(--base-side)" stroke-width="3" stroke-linecap="round"/>
+        <line x1="474" y1="170" x2="500" y2="170" stroke="var(--base-side)" stroke-width="3" stroke-linecap="round"/>
+        <text x="520" y="174" text-anchor="middle" class="tiny" style="fill:var(--req)">L1</text>
+        <circle cx="454" cy="142" r="11" fill="var(--req-side)"/><text x="454" y="147" text-anchor="middle" class="num">3</text>
+        <text x="500" y="242" text-anchor="middle" class="lbl">Register</text>
+      </g>
+
+      <!-- 4 Enforce: a barrier -->
+      <g class="part" data-step="4">
+        <rect x="428" y="278" width="152" height="132" rx="12" class="ring"/>
+        <g filter="url(#sh)">
+          <polygon points="438,316 452,300 576,300 562,316" fill="var(--blk-top)"/>
+          <polygon points="562,316 576,300 576,364 562,380" fill="var(--blk-side)"/>
+          <rect x="438" y="316" width="124" height="64" rx="3" fill="var(--blk)"/>
+        </g>
+        <rect x="466" y="332" width="8" height="38" rx="2" fill="var(--panel)"/>
+        <rect x="526" y="332" width="8" height="38" rx="2" fill="var(--panel)"/>
+        <rect x="462" y="340" width="76" height="12" rx="2" fill="var(--panel)"/>
+        <path d="M474 340 l-6 12 M490 340 l-6 12 M506 340 l-6 12 M522 340 l-6 12 M538 340 l-6 12" stroke="var(--blk)" stroke-width="5"/>
+        <circle cx="454" cy="332" r="11" fill="var(--blk-side)"/><text x="454" y="337" text-anchor="middle" class="num">4</text>
+        <text x="500" y="432" text-anchor="middle" class="lbl">Enforce</text>
+      </g>
+
+      <!-- 5 Replay: two clones, A and B -->
+      <g class="part" data-step="5">
+        <rect x="228" y="278" width="152" height="132" rx="12" class="ring"/>
+        <g filter="url(#sh)">
+          <polygon points="238,316 252,300 376,300 362,316" fill="var(--req-top)"/>
+          <polygon points="362,316 376,300 376,364 362,380" fill="var(--req-side)"/>
+          <rect x="238" y="316" width="124" height="64" rx="3" fill="var(--req)"/>
+        </g>
+        <rect x="268" y="330" width="30" height="36" rx="3" fill="var(--panel)"/>
+        <rect x="306" y="330" width="30" height="36" rx="3" fill="var(--panel)"/>
+        <text x="283" y="354" text-anchor="middle" class="tiny" style="fill:var(--req)">A</text>
+        <text x="321" y="354" text-anchor="middle" class="tiny" style="fill:var(--req)">B</text>
+        <circle cx="254" cy="332" r="11" fill="var(--req-side)"/><text x="254" y="337" text-anchor="middle" class="num">5</text>
+        <text x="300" y="432" text-anchor="middle" class="lbl">Replay</text>
+      </g>
+
+      <!-- 6 Decide: an archive box -->
+      <g class="part" data-step="6">
+        <rect x="28" y="278" width="152" height="132" rx="12" class="ring"/>
+        <g filter="url(#sh)">
+          <polygon points="38,316 52,300 176,300 162,316" fill="var(--req-top)"/>
+          <polygon points="162,316 176,300 176,364 162,380" fill="var(--req-side)"/>
+          <rect x="38" y="316" width="124" height="64" rx="3" fill="var(--req)"/>
+        </g>
+        <rect x="76" y="330" width="48" height="10" rx="2" fill="var(--base-top)"/>
+        <rect x="80" y="340" width="40" height="28" rx="2" fill="var(--panel)"/>
+        <rect x="92" y="346" width="16" height="5" rx="2" fill="var(--base-side)"/>
+        <circle cx="54" cy="332" r="11" fill="var(--req-side)"/><text x="54" y="337" text-anchor="middle" class="num">6</text>
+        <text x="100" y="432" text-anchor="middle" class="lbl">Keep or retire</text>
+      </g>
+    </svg>
+
+    <div class="stepper">
+      <div class="steptext" id="steptext" aria-live="polite"></div>
+      <div class="controls">
+        <button id="back">Back</button>
+        <button id="next" class="primary">Next</button>
+        <button id="all">Show all</button>
+      </div>
+    </div>
+    <div class="card-foot"><span>Tap Next</span><span class="readout" id="readout"></span></div>
+  </div>
+  <div class="legend">
+    <span><i class="sw" style="background:var(--req)"></i>a step a person or an agent does</span>
+    <span><i class="sw" style="background:var(--blk)"></i>code that runs every time</span>
+  </div>
+  <p class="caption">A lesson now goes round a loop instead of a line: before the study, a lesson went in and nothing ever took it out.</p>
+</section>
+
+<section>
+  <h2>What the study found</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Finding</th><th>Number</th></tr></thead>
+    <tbody>
+      <tr><td>Agent failures recorded in six weeks of daily use</td><td class="n">118</td></tr>
+      <tr><td>Of those, stale documentation (drift). 35 were found on one audit day</td><td class="n">48 (40.7 %)</td></tr>
+      <tr><td>Drift found by one LLM audit run (Claude Sonnet 5.5, mean of 3 runs, 47 known items)</td><td class="n">50 %</td></tr>
+      <tr><td>Drift found by three audit runs together</td><td class="n">30 of 47</td></tr>
+      <tr><td>Share of audit findings that were correct</td><td class="n">0.93 to 1.00</td></tr>
+      <tr><td>Replayed past failures that did not happen on Sonnet 5.5, with or without the lesson (of 4 finished)</td><td class="n">3</td></tr>
+      <tr><td>The one drift replay, a stale count: failed without its lint check, then with it</td><td class="n">3 of 3, 0 of 2</td></tr>
+      <tr><td>Total rule text, start to peak (words). A hand pass cut 32 %, then it grew 27 % again</td><td class="n">4,921 to 17,366</td></tr>
+      <tr><td>Replay runs that refused the task because the host clock made old deadlines look close</td><td class="n">7 of 30</td></tr>
+    </tbody>
+  </table></div>
+  <p class="caption">Exploratory: one repository, three runs per condition. The numbers point a direction. They do not prove it.</p>
+</section>
+
+<section>
+  <h2>What changed in divan</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Change</th><th>Answers</th><th>Kind</th></tr></thead>
+    <tbody>
+      <tr><td><b>Lesson register</b>, <code>logs/lessons.csv</code>: where each lesson lives, the model in use, a re-test date and what it should stop</td><td>Rules grow and nothing retires them</td><td><span class="tag rep">record</span></td></tr>
+      <tr><td><b>Replay</b>, <code>make replay</code>: each lesson's old task, without and with the lesson, 10 runs each, deadline dates shifted to today</td><td>Lessons outlive their failures. The clock confound</td><td><span class="tag rep">test</span></td></tr>
+      <tr><td><b>Admission</b>, skill <code>record</code>: a new lesson states what it should stop. A new check brings a passing and a failing test case</td><td>Fixes that caused new failures</td><td><span class="tag req">rule</span></td></tr>
+      <tr><td><b>Guard parses commands</b>, <code>scripts/hooks/guard.py</code>: git's global flags no longer slip past, and quoted text is no longer blocked</td><td>An enforcement gap and a false positive</td><td><span class="tag blk">block</span></td></tr>
+      <tr><td><b>Identifier scan</b>, lint check 8 and <code>scripts/hooks/commit-msg</code>: IBANs, labelled case or customer numbers, in files and in commit messages</td><td>An identifier written into a log entry</td><td><span class="tag blk">block</span></td></tr>
+      <tr><td><b>Heading pointers</b>, lint check 16: a pointer to a section that left its file</td><td>Drift that no audit run found</td><td><span class="tag blk">block</span></td></tr>
+      <tr><td><b>Three audit runs, merged</b>, <code>make audit-docs</code></td><td>One run finds about half the drift</td><td><span class="tag rep">report</span></td></tr>
+      <tr><td><b>Rule budget</b>, lint check 17: a warning when all rule text passes a word count</td><td>Rule text keeps growing</td><td><span class="tag rep">warn</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>What it costs</h2>
+  <ul>
+    <li>The monthly audit: three runs and a merge, about $4 in API-equivalent tokens and 15 minutes.</li>
+    <li>A replay: in the study, 30 runs took 10 minutes and cost about $3.55. At 10 runs per condition, a set of five scenarios costs about $12.</li>
+    <li>Each new lesson: one register row and, for a check, two test cases.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>What is not proven</h2>
+  <ul>
+    <li>Three runs per condition. A failure that did not happen in three runs can still happen.</li>
+    <li>One repository, one owner. Other harnesses can behave differently.</li>
+    <li>The replay keeps code checks even when the failure is gone: they cost nothing per session, and one still stopped an em-dash on an older model.</li>
+    <li>The heading check sees pointers written as <code>`file.md`, "Heading"</code>. A pointer in plain words passes.</li>
+    <li>The identifier scan uses patterns only. A number with no label and no checksum passes.</li>
+    <li>Running the agent under <code>libfaketime</code> instead of shifting dates is offered but not verified.</li>
+  </ul>
+</section>
+
+<section class="cite" aria-label="How to cite">
+  <h2 style="font-size:20px">Cite</h2>
+  <p><em>Lessons Outlive Their Failures: A Case Study of Rules for AI Coding Agents.</em> Preprint, arXiv cs.SE, October 2026.</p>
+  <p>The author, the arXiv identifier and the link are added here once the preprint is announced.</p>
+</section>
+
+<section>
+  <h2>Words you will meet</h2>
+  <dl>
+    <dt>Harness</dt><dd>Everything around the model: rule files, skills, hooks and checks.</dd>
+    <dt>Lesson</dt><dd>A rule or a check added after an agent made a mistake.</dd>
+    <dt>Drift</dt><dd>A statement in the docs that a later change made wrong.</dd>
+    <dt>Lint check</dt><dd>Code that refuses a commit when a pattern is found.</dd>
+    <dt>Replay</dt><dd>Running a past task again in a throwaway copy of the repository.</dd>
+    <dt>Condition A and B</dt><dd>The copy without the lesson (A) and with only the lesson added (B).</dd>
+    <dt>Recall</dt><dd>The share of known problems an audit finds.</dd>
+    <dt>Retire</dt><dd>Move a lesson to the archive with the replay result. Nothing is deleted.</dd>
+  </dl>
+</section>
+
+<footer>
+  <div>Sources: the paper above (Tables 1 to 5, Sections 5 and 6), and in this repository <code>scripts/replay.py</code>, <code>scripts/lint.py</code>, <code>scripts/hooks/guard.py</code>, <code>scripts/audit_docs.sh</code>, <code>logs/lessons.csv</code>.</div>
+  <div>Checked 23.10.2026 against the files as they are on that day.</div>
+</footer>
+
+</div>
+<script>
+(function () {
+  var steps = [
+    ["Failure", "An agent makes a mistake. It goes in a log with the reason. The study counted 118 in six weeks."],
+    ["Admit", "The fix becomes a lesson only with a prediction: what it should stop, and how to see that. A new check also gets one passing and one failing test case."],
+    ["Register", "The lesson gets a row in logs/lessons.csv: where it lives, an exact anchor phrase, the model in use, and a re-test date about three months out. The lint warns when the anchor disappears or the date passes."],
+    ["Enforce", "A code check (guard, lint) blocks the mistake whatever the model does. A prose rule only asks. In the study, code checks held where a rule did not."],
+    ["Replay", "When a new model arrives or the date is due, make replay runs the old task in two copies: A without the lesson, B with it, 10 runs each, with deadline dates moved to today."],
+    ["Keep or retire", "If the failure still happens in A, the lesson stays. If a prose rule never fails in A, the owner can retire it to the archive with the result. Code checks stay unless they misfire."]
+  ];
+  var fig = document.getElementById("fig"), text = document.getElementById("steptext"),
+      readout = document.getElementById("readout"), back = document.getElementById("back"),
+      next = document.getElementById("next"), all = document.getElementById("all"), i = 0;
+  function show(n) {
+    i = n;
+    var parts = fig.querySelectorAll(".part");
+    if (n === 0) {
+      fig.classList.remove("stepping");
+      parts.forEach(function (p) { p.classList.remove("on"); });
+      text.innerHTML = "<b>Six stations</b>A lesson starts as a failure and ends kept or retired. Tap Next to follow one.";
+      readout.textContent = "All stations";
+    } else {
+      fig.classList.add("stepping");
+      parts.forEach(function (p) { p.classList.toggle("on", +p.dataset.step === n); });
+      text.innerHTML = "<b>" + steps[n - 1][0] + "</b>" + steps[n - 1][1];
+      readout.textContent = "Step " + n + " of " + steps.length + ": " + steps[n - 1][0].toLowerCase();
+    }
+    back.disabled = n === 0;
+    next.disabled = n === steps.length;
+  }
+  back.onclick = function () { show(Math.max(0, i - 1)); };
+  next.onclick = function () { show(Math.min(steps.length, i + 1)); };
+  all.onclick = function () { show(0); };
+  show(0);
+})();
+</script>
+</body>
+</html>

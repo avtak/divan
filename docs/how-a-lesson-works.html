@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="img/divan.svg" type="image/svg+xml">
+<title>How a Lesson Works</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;800&family=Atkinson+Hyperlegible+Mono:wght@400;600&display=swap">
+<style>
+/* One readable column like the other divan explainers; the centre is a step-through drawing. */
+:root {
+  --bg: #f3f5f8; --panel: #ffffff; --ink: #18212e; --muted: #566274; --line: #d3d9e2;
+  --accent: #b86a00; --accent-soft: #fbecd6;
+  --req: #2f5f9e; --req-top: #7fa6d8; --req-side: #23497a; --req-soft: #dde8f6;
+  --blk: #b3541e; --blk-top: #e59a6a; --blk-side: #8a3d12; --blk-soft: #f6e2d6;
+  --base: #c9d0da; --base-top: #e4e8ee; --base-side: #a9b2bf; --shadow: rgba(24,33,46,.16);
+  --f-body: "Atkinson Hyperlegible Next", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "Atkinson Hyperlegible Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11161d; --panel: #18202a; --ink: #e6ebf2; --muted: #9aa7b8; --line: #2c3746;
+    --accent: #f0a640; --accent-soft: #3a2a12;
+    --req: #6f9fe0; --req-top: #3d5f8f; --req-side: #213a5c; --req-soft: #1a2a40;
+    --blk: #ec9466; --blk-top: #8f4f2b; --blk-side: #5a2d14; --blk-soft: #3a2316;
+    --base: #3a4554; --base-top: #4a5666; --base-side: #2a333f; --shadow: rgba(0,0,0,.45);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11161d; --panel: #18202a; --ink: #e6ebf2; --muted: #9aa7b8; --line: #2c3746;
+  --accent: #f0a640; --accent-soft: #3a2a12;
+  --req: #6f9fe0; --req-top: #3d5f8f; --req-side: #213a5c; --req-soft: #1a2a40;
+  --blk: #ec9466; --blk-top: #8f4f2b; --blk-side: #5a2d14; --blk-soft: #3a2316;
+  --base: #3a4554; --base-top: #4a5666; --base-side: #2a333f; --shadow: rgba(0,0,0,.45);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 17px; line-height: 1.55; }
+.wrap { max-width: 780px; margin: 0 auto; padding: 28px 16px 56px; display: grid; gap: 40px; }
+h1, h2, h3 { text-wrap: balance; line-height: 1.2; margin: 0; }
+h1 { font-size: clamp(30px, 6vw, 44px); font-weight: 800; letter-spacing: -0.01em; }
+h2 { font-size: 24px; font-weight: 800; }
+p { margin: 0; max-width: 65ch; }
+ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+code { font-family: var(--f-mono); font-size: 0.88em; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; overflow-wrap: anywhere; }
+.eyebrow { font-family: var(--f-mono); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+section { display: grid; gap: 14px; }
+.answer { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 6px; padding: 16px 18px; display: grid; gap: 8px; }
+
+/* Figure card */
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 10px; }
+.card-head, .card-foot { display: flex; justify-content: space-between; gap: 12px; font-family: var(--f-mono); font-size: 13px; color: var(--muted); }
+.card-head strong { color: var(--ink); font-weight: 600; }
+.readout { text-align: right; color: var(--ink); }
+svg.fig { width: 100%; height: auto; display: block; }
+.fig text { font-family: var(--f-body); fill: var(--ink); }
+.fig .lbl { font-size: 19px; font-weight: 800; }
+.fig .sub { font-size: 15px; fill: var(--muted); }
+.fig .mono { font-family: var(--f-mono); font-size: 14px; fill: var(--muted); }
+.fig .num { font-family: var(--f-mono); font-size: 15px; font-weight: 600; fill: #fff; }
+.part { transition: opacity .35s ease, transform .35s ease; transform-box: fill-box; transform-origin: center; }
+.fig.stepping .part { opacity: .42; }
+.fig.stepping .part.on { opacity: 1; }
+.part .ring { fill: none; stroke: var(--accent); stroke-width: 4; opacity: 0; transition: opacity .35s ease; }
+.part.on .ring { opacity: 1; }
+.track { fill: none; stroke: var(--base-side); stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; }
+.track-dash { fill: none; stroke: var(--base-top); stroke-width: 2; stroke-dasharray: 2 12; stroke-linecap: round; }
+.arrow { fill: none; stroke: var(--muted); stroke-width: 2.5; }
+.arrowhead { fill: var(--muted); }
+.stepper { display: grid; gap: 10px; }
+.steptext { min-height: 5.2em; }
+.steptext b { display: block; margin-bottom: 2px; }
+.controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+button { font: inherit; font-size: 15px; font-weight: 600; padding: 8px 16px; border-radius: 6px; border: 1.5px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--panel); }
+button:focus-visible { outline: 3px solid var(--req); outline-offset: 2px; }
+button:disabled { opacity: .45; cursor: default; }
+.caption { font-size: 15px; color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 14px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+@media (max-width: 560px) { .fig .lbl { font-size: 25px; } .fig .sub { font-size: 21px; } .fig .mono { font-size: 20px; } .fig .num { font-size: 19px; } }
+
+/* Tables and tags */
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+th { font-weight: 600; color: var(--muted); font-size: 14px; }
+.tag { display: inline-block; font-family: var(--f-mono); font-size: 12px; font-weight: 600; padding: 1px 7px; border-radius: 10px; white-space: nowrap; }
+.tag.req { background: var(--req-soft); color: var(--req); }
+.tag.blk { background: var(--blk-soft); color: var(--blk); }
+.tag.rep { background: var(--accent-soft); color: var(--accent); }
+.rule { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: grid; gap: 8px; }
+dl { margin: 0; display: grid; gap: 10px; }
+dt { font-weight: 800; }
+dd { margin: 0; color: var(--muted); }
+footer { font-size: 14px; color: var(--muted); display: grid; gap: 6px; border-top: 1px solid var(--line); padding-top: 16px; }
+@media (prefers-reduced-motion: reduce) { .part, .part .ring { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header style="display:grid;gap:10px">
+  <div class="eyebrow">divan explainer · 23.10.2026</div>
+  <h1>How a Lesson Works</h1>
+</header>
+
+<section class="answer" aria-label="Short answer">
+  <p><strong>A lesson only changes an agent if it sits in a place the agent passes through.</strong> In divan there are six such places, from session start to the monthly audit. Two of them are <em>requests</em>: the model reads the rule and usually follows it. Three are code that runs every time, and two of those <em>block</em> a mistake whatever the model wants. The sixth is a monthly <em>report</em>. So where you put a lesson decides when it fires and how strong it is.</p>
+</section>
+
+<section aria-label="Figure: the lesson loop and the six places">
+  <div class="card">
+    <div class="card-head"><span>Fig 1</span><strong>A lesson's path through divan</strong></div>
+
+    <svg class="fig" id="fig" viewBox="0 0 600 596" role="img" aria-labelledby="figtitle figdesc">
+      <title id="figtitle">The lesson loop and the six places where a lesson fires</title>
+      <desc id="figdesc">Top: a mistake becomes a log entry, then a lesson after the owner's yes. Bottom: a track with six stations an agent passes during work: session start, skills, the pre-tool guard, the post-edit reminder, the pre-commit lint and the monthly audit.</desc>
+      <defs>
+        <filter id="sh" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="var(--shadow)" flood-opacity="1"/></filter>
+        <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arrowhead"/></marker>
+      </defs>
+
+      <!-- ===== Top: the lesson loop ===== -->
+      <text x="20" y="34" class="mono">THE LESSON LOOP</text>
+
+      <!-- 1 Mistake: a letter with a red mark -->
+      <g class="part" data-step="1">
+        <rect x="34" y="58" width="128" height="104" rx="10" class="ring" />
+        <g filter="url(#sh)">
+          <path d="M56 70 h68 l14 14 v68 h-82 z" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
+          <path d="M124 70 v14 h14" fill="var(--base-top)" stroke="var(--line)" stroke-width="2"/>
+          <line x1="66" y1="96" x2="124" y2="96" stroke="var(--base)" stroke-width="4" stroke-linecap="round"/>
+          <line x1="66" y1="110" x2="114" y2="110" stroke="var(--base)" stroke-width="4" stroke-linecap="round"/>
+          <line x1="66" y1="124" x2="96" y2="124" stroke="var(--base)" stroke-width="4" stroke-linecap="round"/>
+          <line x1="100" y1="124" x2="118" y2="124" stroke="#d0453a" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="109" cy="124" r="11" fill="none" stroke="#d0453a" stroke-width="2.5"/>
+        </g>
+        <text x="98" y="186" text-anchor="middle" class="lbl">Mistake</text>
+        <text x="98" y="206" text-anchor="middle" class="sub">an em-dash</text>
+      </g>
+
+      <line x1="172" y1="112" x2="222" y2="112" class="arrow" marker-end="url(#ah)"/>
+
+      <!-- 2 Log entry: an open notebook -->
+      <g class="part" data-step="2">
+        <rect x="232" y="58" width="136" height="104" rx="10" class="ring" />
+        <g filter="url(#sh)">
+          <path d="M246 78 q27 -10 54 0 v66 q-27 -10 -54 0 z" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
+          <path d="M300 78 q27 -10 54 0 v66 q-27 -10 -54 0 z" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
+          <line x1="300" y1="78" x2="300" y2="144" stroke="var(--base-side)" stroke-width="2"/>
+          <line x1="256" y1="96" x2="290" y2="93" stroke="var(--base)" stroke-width="3"/>
+          <line x1="256" y1="108" x2="290" y2="105" stroke="var(--base)" stroke-width="3"/>
+          <line x1="256" y1="120" x2="282" y2="118" stroke="var(--base)" stroke-width="3"/>
+          <line x1="310" y1="93" x2="344" y2="96" stroke="var(--base)" stroke-width="3"/>
+          <line x1="310" y1="105" x2="344" y2="108" stroke="var(--base)" stroke-width="3"/>
+        </g>
+        <text x="300" y="186" text-anchor="middle" class="lbl">Log entry</text>
+        <text x="300" y="206" text-anchor="middle" class="sub">skill <tspan font-family="var(--f-mono)">record</tspan></text>
+      </g>
+
+      <line x1="378" y1="112" x2="428" y2="112" class="arrow" marker-end="url(#ah)"/>
+
+      <!-- 3 Your yes: a stamp -->
+      <g class="part" data-step="3">
+        <rect x="438" y="58" width="128" height="104" rx="10" class="ring" />
+        <g filter="url(#sh)">
+          <rect x="482" y="72" width="40" height="34" rx="8" fill="var(--req-top)" stroke="var(--req-side)" stroke-width="2"/>
+          <rect x="492" y="106" width="20" height="16" fill="var(--req-side)"/>
+          <path d="M466 122 h72 l-6 14 h-60 z" fill="var(--req)" stroke="var(--req-side)" stroke-width="2"/>
+          <path d="M488 146 l10 9 l20 -20" fill="none" stroke="#2d8a4e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+        <text x="502" y="186" text-anchor="middle" class="lbl">Your yes</text>
+        <text x="502" y="206" text-anchor="middle" class="sub">then placed</text>
+      </g>
+
+      <!-- arrow down into the track -->
+      <path d="M502 218 v26 q0 10 -10 10 h-382 q-10 0 -10 10 v12" class="arrow" marker-end="url(#ah)"/>
+      <text x="300" y="238" text-anchor="middle" class="mono">placed in one of six stations</text>
+
+      <!-- ===== Bottom: the track of six stations ===== -->
+      <path class="track" d="M100 378 H500 Q572 378 572 450 V466 Q572 538 500 538 H100"/>
+      <path class="track-dash" d="M100 378 H500 Q572 378 572 450 V466 Q572 538 500 538 H100"/>
+
+      <!-- Station helper: base slab + coloured block. Row 1 at y=352, row 2 at y=512 -->
+
+      <!-- S1 Session start: AGENTS.md book -->
+      <g class="part" data-step="4">
+        <rect x="38" y="282" width="124" height="138" rx="12" class="ring"/>
+        <g filter="url(#sh)">
+          <path d="M52 352 h96 l-8 14 h-80 z" fill="var(--base-side)"/>
+          <rect x="52" y="342" width="96" height="10" fill="var(--base-top)"/>
+          <rect x="66" y="300" width="68" height="42" rx="4" fill="var(--req)"/>
+          <rect x="66" y="296" width="68" height="8" rx="3" fill="var(--req-top)"/>
+          <rect x="72" y="310" width="56" height="5" fill="var(--req-top)"/>
+          <text x="100" y="334" text-anchor="middle" class="num">1</text>
+        </g>
+        <text x="100" y="408" text-anchor="middle" class="lbl">Session start</text>
+      </g>
+
+      <!-- S2 On demand: a shelf of skill cards -->
+      <g class="part" data-step="5">
+        <rect x="238" y="282" width="124" height="138" rx="12" class="ring"/>
+        <g filter="url(#sh)">
+          <path d="M252 352 h96 l-8 14 h-80 z" fill="var(--base-side)"/>
+          <rect x="252" y="342" width="96" height="10" fill="var(--base-top)"/>
+          <rect x="266" y="306" width="14" height="36" fill="var(--req-side)"/>
+          <rect x="282" y="300" width="14" height="42" fill="var(--req)"/>
+          <rect x="298" y="308" width="14" height="34" fill="var(--req-side)"/>
+          <rect x="314" y="302" width="14" height="40" fill="var(--req)"/>
+          <rect x="314" y="298" width="14" height="6" fill="var(--req-top)"/>
+          <rect x="282" y="296" width="14" height="6" fill="var(--req-top)"/>
+          <text x="300" y="334" text-anchor="middle" class="num">2</text>
+        </g>
+        <text x="300" y="408" text-anchor="middle" class="lbl">Skills</text>
+      </g>
+
+      <!-- S3 Before a shell command: barrier gate -->
+      <g class="part" data-step="6">
+        <rect x="438" y="282" width="124" height="138" rx="12" class="ring"/>
+        <g filter="url(#sh)">
+          <path d="M452 352 h96 l-8 14 h-80 z" fill="var(--base-side)"/>
+          <rect x="452" y="342" width="96" height="10" fill="var(--base-top)"/>
+          <rect x="462" y="298" width="20" height="44" rx="3" fill="var(--blk)"/>
+          <rect x="462" y="294" width="20" height="8" rx="3" fill="var(--blk-top)"/>
+          <rect x="480" y="308" width="62" height="10" rx="5" fill="#f2f2f2" stroke="var(--blk-side)" stroke-width="2"/>
+          <rect x="496" y="308" width="10" height="10" fill="#d0453a"/>
+          <rect x="520" y="308" width="10" height="10" fill="#d0453a"/>
+          <text x="472" y="334" text-anchor="middle" class="num">3</text>
+        </g>
+        <text x="500" y="408" text-anchor="middle" class="lbl">Guard</text>
+      </g>
+
+      <!-- S4 After an edit: a bell -->
+      <g class="part" data-step="7">
+        <rect x="438" y="442" width="124" height="138" rx="12" class="ring"/>
+        <g filter="url(#sh)">
+          <path d="M452 512 h96 l-8 14 h-80 z" fill="var(--base-side)"/>
+          <rect x="452" y="502" width="96" height="10" fill="var(--base-top)"/>
+          <path d="M478 494 q0 -34 22 -34 q22 0 22 34 z" fill="var(--blk-top)" stroke="var(--blk)" stroke-width="2.5"/>
+          <rect x="472" y="492" width="56" height="8" rx="3" fill="var(--blk)"/>
+          <circle cx="500" cy="456" r="4" fill="var(--blk)"/>
+          <text x="500" y="488" text-anchor="middle" class="num" style="fill:var(--blk-side)">4</text>
+        </g>
+        <text x="500" y="568" text-anchor="middle" class="lbl">Reminder</text>
+      </g>
+
+      <!-- S5 At commit: a padlocked turnstile -->
+      <g class="part" data-step="8">
+        <rect x="238" y="442" width="124" height="138" rx="12" class="ring"/>
+        <g filter="url(#sh)">
+          <path d="M252 512 h96 l-8 14 h-80 z" fill="var(--base-side)"/>
+          <rect x="252" y="502" width="96" height="10" fill="var(--base-top)"/>
+          <path d="M286 476 v-12 a14 14 0 0 1 28 0 v12" fill="none" stroke="var(--blk-side)" stroke-width="6"/>
+          <rect x="276" y="474" width="48" height="28" rx="5" fill="var(--blk)"/>
+          <rect x="276" y="474" width="48" height="6" rx="3" fill="var(--blk-top)"/>
+          <text x="300" y="497" text-anchor="middle" class="num">5</text>
+        </g>
+        <text x="300" y="568" text-anchor="middle" class="lbl">Lint</text>
+      </g>
+
+      <!-- S6 Monthly: an inspection lamp over a page -->
+      <g class="part" data-step="9">
+        <rect x="38" y="442" width="124" height="138" rx="12" class="ring"/>
+        <g filter="url(#sh)">
+          <path d="M52 512 h96 l-8 14 h-80 z" fill="var(--base-side)"/>
+          <rect x="52" y="502" width="96" height="10" fill="var(--base-top)"/>
+          <rect x="70" y="482" width="44" height="20" rx="2" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
+          <line x1="78" y1="490" x2="104" y2="490" stroke="var(--base)" stroke-width="3"/>
+          <line x1="128" y1="502" x2="128" y2="462" stroke="var(--base-side)" stroke-width="4"/>
+          <line x1="128" y1="462" x2="108" y2="456" stroke="var(--base-side)" stroke-width="4"/>
+          <path d="M92 448 h28 l-6 14 h-16 z" fill="var(--accent)" stroke="var(--accent)" stroke-width="2" stroke-dasharray="4 3"/>
+          <path d="M98 462 l-14 18 h40 l-10 -18 z" fill="var(--accent-soft)" opacity=".8"/>
+          <text x="140" y="474" text-anchor="middle" class="num" style="fill:var(--accent)">6</text>
+        </g>
+        <text x="100" y="568" text-anchor="middle" class="lbl">Audit</text>
+      </g>
+</svg>
+
+    <div class="legend"><span><i class="sw" style="background:var(--req)"></i>request: the model reads it</span><span><i class="sw" style="background:var(--blk)"></i>code: runs every time</span><span><i class="sw" style="background:var(--accent)"></i>report: a person decides the fix</span></div>
+
+    <div class="stepper" aria-live="polite">
+      <div class="steptext" id="steptext"></div>
+      <div class="controls">
+        <button id="prev" type="button">Back</button>
+        <button id="next" type="button" class="primary">Next</button>
+        <button id="all" type="button">Show all</button>
+      </div>
+    </div>
+    <div class="card-foot"><span>Tap Next</span><span class="readout" id="readout"></span></div>
+  </div>
+  <p class="caption">An agent moves along the track in order: stations 1 and 2 hand it instructions, 3 and 5 can stop it, 4 reminds it, and 6 checks the result once a month.</p>
+</section>
+
+<section>
+  <h2>The six places, and how strong each one is</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Place</th><th>When it fires</th><th>Strength</th></tr></thead>
+    <tbody>
+      <tr><td><b>1 · <code>AGENTS.md</code></b><br>always-loaded rule file</td><td>At the start of every session, in Claude Code, Antigravity and Hermes. <code>context.py</code> also adds your deadlines.</td><td><span class="tag req">request</span></td></tr>
+      <tr><td><b>2 · A skill</b><br><code>skills/&lt;name&gt;/SKILL.md</code>, 5 in this release</td><td>When the task matches its description, or you name it ("log it" starts <code>record</code>).</td><td><span class="tag req">request</span>, loaded only when needed</td></tr>
+      <tr><td><b>3 · <code>guard.py</code></b><br>pre-tool hook</td><td>Before every shell command, in all three runtimes. Blocks commands like <code>rm -rf</code>, a force-push or <code>git reset --hard</code>.</td><td><span class="tag blk">block</span></td></tr>
+      <tr><td><b>4 · <code>coupled.py</code></b><br>post-edit hook</td><td>After a file edit, in Claude Code only. Names the docs that usually need the same change.</td><td><span class="tag blk">code</span>, but only a reminder</td></tr>
+      <tr><td><b>5 · <code>lint.py</code></b><br>pre-commit, 18 checks today</td><td>At every commit through the git pre-commit hook (<code>scripts/hooks/pre-commit</code>). A failure refuses the commit and prints the file and line.</td><td><span class="tag blk">block</span></td></tr>
+      <tr><td><b>6 · <code>audit_docs.sh</code></b><br>monthly audit</td><td>Once a month (<code>make audit-docs</code>). A read-only agent compares the docs with the last 35 days of changes and writes a report.</td><td><span class="tag rep">report</span>, finds about half</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2>Where to put a new lesson</h2>
+  <div class="rule">
+    <p><strong>If code can detect the mistake, make the lesson code:</strong> a lint check (station 5) or a guard pattern (station 3). It then works whatever the model does.</p>
+    <p><strong>If the mistake needs judgement</strong> (tone, which workflow, what to ask first), it has to be a prose rule. The <code>record</code> skill says where:</p>
+    <ul>
+      <li>agent behaviour everywhere → <code>AGENTS.md</code>, "Hard rules"</li>
+      <li>answer shape and stops → <code>skills/working-terms/SKILL.md</code></li>
+      <li>one workflow → that workflow's <code>SKILL.md</code></li>
+      <li>a fact or decision → the file that owns it</li>
+    </ul>
+    <p>Every rule change needs your yes first (<code>AGENTS.md</code>, "Records are appended. Rules, statuses and decisions are asked").</p>
+  </div>
+</section>
+
+<section>
+  <h2>What the harness study found about these places</h2>
+  <ul>
+    <li><b>Requests depend on the model.</b> On the current model, three of four replayed failures did not happen even without their fix, so some prose rules may be dead weight. The written rule on time estimates did not change Sonnet 4.5's overestimates.</li>
+    <li><b>Blocks hold, but narrowly.</b> The lint check stopped stale skill counts and the em-dash every time it was active. Yet each new check caught one form of drift, and a different form appeared within one to nine days.</li>
+    <li><b>The audit is a safety net with holes.</b> One run found about half of the known drift. Three runs merged found about two thirds.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>The missing steps, added 23.10.2026</h2>
+  <p>Before the study, lessons were added and never retired. Total rule text grew 3.5-fold in 18 days. These steps are now in divan (<a href="lessons-outlive-their-failures.html">Lessons Outlive Their Failures</a>):</p>
+  <ul>
+    <li><b>A lesson register:</b> each rule records where it came from, which model needed it, and a re-test date.</li>
+    <li><b>An admission rule:</b> a new lesson needs a prediction and a test case.</li>
+    <li><b>A retirement check:</b> replay the old mistake without the lesson, under a shifted clock, to see whether it is still needed.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Words you will meet</h2>
+  <dl>
+    <dt>Harness</dt><dd>Everything around the model that guides it: rule files, skills, hooks and checks.</dd>
+    <dt>Lesson</dt><dd>A fix written so that a mistake does not repeat: a prose rule or a code check.</dd>
+    <dt>Hook</dt><dd>A small script the agent runtime runs at a fixed moment, such as before a shell command.</dd>
+    <dt>Lint check</dt><dd>One of the checks <code>lint.py</code> runs on every commit.</dd>
+    <dt>Skill</dt><dd>A workflow file the agent loads only when the task needs it.</dd>
+    <dt>Drift</dt><dd>Documentation that has gone out of date while the files it describes changed.</dd>
+    <dt>Replay</dt><dd>Re-running an old mistake in a copy of the repository, with and without its fix.</dd>
+  </dl>
+</section>
+
+<footer>
+  <div>Sources, read on 23.10.2026: <code>.claude/settings.json</code>, <code>.agents/hooks.json</code>, <code>scripts/lint.py</code> (check list), <code>scripts/hooks/</code> (<code>context.py</code>, <code>guard.py</code>, <code>coupled.py</code>, <code>pre-commit</code>), <code>scripts/audit_docs.sh</code>, <code>skills/record/SKILL.md</code>, <code>AGENTS.md</code>, and the harness study (preprint, arXiv cs.SE, October 2026).</div>
+  <div>Not checked: whether the pre-commit hook is installed in every checkout, including the server's.</div>
+</footer>
+
+</div>
+
+<script>
+(function () {
+  var steps = [
+    ["A mistake happens", "An agent drafts a cover letter and writes an em-dash, which your rules forbid."],
+    ["The fix is logged", "The record skill writes the incident into the area log, with the reason. The story stays in the log."],
+    ["The lesson is promoted", "Could the mistake repeat? Then the rule moves to the place where it belongs, after your yes."],
+    ["Station 1: session start", "Every runtime loads AGENTS.md before its first answer, and context.py adds your deadlines. A request: the model reads it and usually follows it."],
+    ["Station 2: skills", "A skill loads when the task matches it or you name it. A request, but a targeted one, so it does not crowd every session."],
+    ["Station 3: the guard", "Before every shell command, guard.py inspects it and blocks destructive ones, such as rm -rf or a force-push. Code: it blocks whatever the model wants."],
+    ["Station 4: the reminder", "After a file edit in Claude Code, coupled.py names the docs that usually need the same change. Code, but it only reminds."],
+    ["Station 5: lint at commit", "lint.py runs 18 checks on every commit. The em-dash check refuses the letter until the agent removes the character. Code: a hard block."],
+    ["Station 6: the monthly audit", "A read-only agent compares the docs with recent changes and writes a report. One run finds about half of the drift. You decide each fix."]
+  ];
+  var fig = document.getElementById("fig");
+  var parts = fig.querySelectorAll(".part");
+  var text = document.getElementById("steptext");
+  var readout = document.getElementById("readout");
+  var prev = document.getElementById("prev"), next = document.getElementById("next"), all = document.getElementById("all");
+  var i = 0;
+  function show(n) {
+    i = n;
+    fig.classList.add("stepping");
+    parts.forEach(function (p) { p.classList.toggle("on", Number(p.dataset.step) === i + 1); });
+    text.innerHTML = "<b>" + steps[i][0] + "</b>" + steps[i][1];
+    readout.textContent = "Step " + (i + 1) + " of " + steps.length;
+    prev.disabled = i === 0;
+    next.disabled = i === steps.length - 1;
+  }
+  function showAll() {
+    fig.classList.remove("stepping");
+    parts.forEach(function (p) { p.classList.remove("on"); });
+    text.innerHTML = "<b>All six places</b>Blue stations are requests, orange stations are code, and the dashed lamp is the monthly report.";
+    readout.textContent = "Overview";
+    prev.disabled = false; next.disabled = false;
+  }
+  prev.addEventListener("click", function () { show(Math.max(0, i - 1)); });
+  next.addEventListener("click", function () { show(Math.min(steps.length - 1, i + 1)); });
+  all.addEventListener("click", showAll);
+  show(0);
+})();
+</script>
+</body>
+</html>

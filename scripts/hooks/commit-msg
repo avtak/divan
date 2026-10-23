@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# commit-msg: refuse a commit message that holds a secret or an identifier (lint Check 8 patterns).
+# Why: in the harness study a visa number reached git history through a commit message,
+# and the pre-commit lint only reads the staged files. Enabled with core.hooksPath, like pre-commit.
+set -eu
+
+py=$(command -v python3 || command -v python) || { echo "commit-msg: no python found" >&2; exit 1; }
+"$py" scripts/lint.py --commit-msg "$1" || exit 1

@@ -21,7 +21,10 @@ Checks (F = failure blocks the commit, W = warning only):
        Claude Code stops reading AGENTS.md, nested ones included
   7 F  a symlink in a tool's home config (~/.claude, ~/.gemini) that resolves into this repo.
        Project links (.claude/skills, .agents/skills) are the supported way
-  8 F  a staged line that looks like a secret, or a staged .env file. Same pattern as
+  8 F  a staged line that looks like a secret or an identifier (IBAN, a labelled case, customer,
+       contract or passport number, a +49 phone outside ABOUT_ME.md), or a staged .env file.
+       scripts/hooks/commit-msg runs the same on the message (`--commit-msg FILE`); `--scan-ids`
+       sweeps every tracked file once. A false hit: `<!-- lint:not-an-id -->` on the line. Same pattern as
        scripts/divan-sync, so a hand commit gets the net the auto-sync has
   9 F  a skill on disk missing from the docs that list them (SKILL_DOCS), or a wrong skill count
        in skills/context-layers.svg
@@ -37,7 +40,12 @@ Checks (F = failure blocks the commit, W = warning only):
  15 W  a new log entry (an added "- **" line in a *_log.md) over 800 characters. The format is a
        headline and at most three sentences; the detail goes in the commit message (skill record)
 
-Usage:  python3 scripts/lint.py [--quiet] [--probe]
+ 16 F  a pointer `file.md`, "Heading" (or `file.md` → **Heading**) whose phrase is not in that
+       file. Check 2 sees dead paths only. A quote that is not a pointer: `<!-- lint:quote -->`
+ 17 W  all rule text (AGENTS.md files and skills) over RULE_BUDGET words
+ 18 W  logs/lessons.csv: an active lesson whose anchor left its file, or whose re-test is due
+
+Usage:  python3 scripts/lint.py [--quiet] [--probe] [--scan-ids] [--commit-msg FILE]
 Exit 0 clean (warnings allowed), 1 on any failure.
 """
 from __future__ import annotations
@@ -278,6 +286,40 @@ def check_pointers(root: Path, files: list[Path]) -> list[str]:
     return fails
 
 
+HEADING_POINTER = re.compile(r"`([A-Za-z0-9_][A-Za-z0-9_./-]*\.(?:md|html|py|sh|tex))`([^`\"“\n]{0,30}?)[\"“]([^\"”\n]{3,80})[\"”]")
+BOLD_POINTER = re.compile(r"`([A-Za-z0-9_][A-Za-z0-9_./-]*\.(?:md|html|py|sh|tex))`(\s*(?:→|,|:)?\s*)\*\*([^*\n]{3,60})\*\*")
+
+
+def _plain(s: str) -> str:
+    return re.sub(r"\s+", " ", re.sub(r"[*_`#]", "", s)).strip().lower()
+
+
+def check_heading_pointers(root: Path, files: list[Path]) -> list[str]:
+    """Check 16: `file.md`, "Heading" where the quoted phrase is no longer in that file. Check 2
+    sees a dead path, not a dead heading. In the harness study no LLM audit run found this kind."""
+    fails, cache = [], {}
+    for p in files:
+        r = rel(root, p)
+        if is_record(r):
+            continue
+        text = p.read_text(encoding="utf-8", errors="replace")
+        lines = text.splitlines()
+        for m in list(HEADING_POINTER.finditer(text)) + list(BOLD_POINTER.finditer(text)):
+            tok, gap, phrase = m.groups()
+            ln = text.count("\n", 0, m.start()) + 1
+            if re.search(r"[.;]\s", gap) or "lint:quote" in lines[ln - 1] or history_near(lines, ln):
+                continue
+            target = root / tok
+            if not target.is_file():
+                continue                      # Check 2 reports a dead path
+            if tok not in cache:
+                cache[tok] = _plain(target.read_text(encoding="utf-8", errors="replace"))
+            if _plain(phrase) not in cache[tok]:
+                fails.append(f"{r}:{ln}: points to \"{phrase}\" in `{tok}`, which has no such text "
+                             "(a quote, not a pointer: add <!-- lint:quote --> to the line)")
+    return fails
+
+
 def check_stale(root: Path, files: list[Path]) -> list[str]:
     warns = []
     for p in files:
@@ -365,9 +407,79 @@ SECRET = re.compile(r"BEGIN [A-Z ]*PRIVATE KEY|ssh-(rsa|ed25519) AAAA|ghp_[A-Za-
                     r"|sk-[A-Za-z0-9]{20}|(api[_-]?key|secret|password|token)\s*[:=]\s*[A-Za-z0-9_/+-]{20}",
                     re.I)
 
+# Check 8 also looks for identifiers, not only keys. In the harness study three of four privacy
+# failures were identifiers: a visa number in a commit message and a file, a street address in a
+# skill, and the number again inside the log entry that recorded its purge. Patterns only: a list
+# of the real numbers would be the very file the identifier rule forbids.
+ID_LABEL = re.compile(
+    r"(?i:\b(Aktenzeichen|Az\.|Kunden-?(?:nummer|nr\.?)|Vertrags-?(?:nummer|nr\.?)|Versicherungs-?(?:nummer|nr\.?)"
+    r"|Mitglieds-?(?:nummer|nr\.?)|Personal-?(?:nummer|nr\.?)|Steuer-?(?:nummer|nr\.?|-?ID|-?IdNr\.?)|IdNr\.?"
+    r"|Identifikationsnummer|Pass-?(?:nummer|nr\.?)|Ausweis-?(?:nummer|nr\.?)|Sozialversicherungsnummer|SV-Nr\.?"
+    r"|Rentenversicherungsnummer|Visum-?(?:nummer|nr\.?)|Antrags-?(?:nummer|nr\.?)|Fall-?(?:nummer|nr\.?)"
+    r"|(?:passport|visa|case|account|customer|contract|policy|membership|tax|permit|application)\s+(?:no\.?|nr\.?|number|ID)"
+    r"))[\s:#.(`'\"=]{0,5}([A-Z0-9]*\d[A-Z0-9./-]*(?: [A-Z0-9./-]+){0,4})")   # value: capitals and digits
+IBAN = re.compile(r"\b([A-Z]{2}\d{2}(?: ?[A-Z0-9]{4}){2,7}(?: ?[A-Z0-9]{1,4})?)\b")
+PHONE = re.compile(r"(?<![\w+])(?:\+|00)49[\s/-]?\(?0?\)?\d{2,5}[\s/-]?\d{3,}[\d\s-]{0,6}")
+PHONE_OK = ("ABOUT_ME.md",)                 # the owner's own contact line
+NOT_AN_ID = "lint:not-an-id"
+
+
+def _iban_ok(s: str) -> bool:
+    s = s.replace(" ", "")
+    if not 15 <= len(s) <= 34:
+        return False
+    n = "".join(str(int(c, 36)) for c in s[4:] + s[:4])
+    return int(n) % 97 == 1
+
+
+def identifiers(line: str, path: str = "") -> list[str]:
+    """What in one line looks like an identifier (kinds only, never the value)."""
+    if NOT_AN_ID in line:
+        return []
+    hits = []
+    for m in ID_LABEL.finditer(line):
+        if sum(c.isdigit() for c in m.group(2)) >= 4:
+            hits.append(f"a number after '{m.group(1)}'")
+    if any(_iban_ok(m.group(1)) for m in IBAN.finditer(line)):
+        hits.append("an IBAN")
+    if PHONE.search(line) and not path.startswith(PHONE_OK):
+        hits.append("a phone number")
+    return hits
+
+
+def check_message(path: str) -> int:
+    """`--commit-msg FILE` (scripts/hooks/commit-msg): a secret or an identifier in the message."""
+    lines = [x for x in Path(path).read_text(encoding="utf-8", errors="replace").splitlines()
+             if not x.startswith("#")]
+    hits = [f"line {i}: {k}" for i, x in enumerate(lines, 1)
+            for k in (["a secret"] if SECRET.search(x) else []) + identifiers(x)]
+    for h in hits:
+        print(f"commit-msg: {h}; a commit message stays in git history forever. Name the password-manager item instead")
+    return 1 if hits else 0
+
+
+def scan_ids(root: Path) -> int:
+    """`--scan-ids`: every tracked text file, for a one-off sweep. Report only, not a check."""
+    names = subprocess.run(["git", "ls-files", "-z"], cwd=root, capture_output=True, text=True).stdout.split("\0")
+    n = 0
+    for name in filter(None, names):
+        p = root / name
+        if p.suffix.lower() in (".pdf", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".mp4", ".mp3", ".wav", ".ico") or not p.is_file():
+            continue
+        try:
+            text = p.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        for i, line in enumerate(text.splitlines(), 1):
+            for k in identifiers(line, name):
+                print(f"{name}:{i}: {k}")
+                n += 1
+    print(f"scan-ids: {n} hit(s)")
+    return 1 if n else 0
+
 
 def check_staged(root: Path) -> list[str]:
-    """Check 8: a staged .env file, or an added line that looks like a secret."""
+    """Check 8: a staged .env file, or an added line that looks like a secret or an identifier."""
     names = subprocess.run(["git", "diff", "--cached", "--name-only", "--diff-filter=AM"],
                            cwd=root, capture_output=True, text=True).stdout.split()
     fails = []
@@ -378,8 +490,15 @@ def check_staged(root: Path) -> list[str]:
         diff = subprocess.run(["git", "diff", "--cached", "-U0", "--", n], cwd=root,
                               capture_output=True, text=True, errors="replace").stdout
         for line in diff.splitlines():
-            if line.startswith("+") and not line.startswith("+++") and SECRET.search(line):
+            if not line.startswith("+") or line.startswith("+++"):
+                continue
+            if SECRET.search(line):
                 fails.append(f"{n}: a staged line looks like a secret; unstage it and move it to a password manager")
+                break
+            found = identifiers(line[1:], n)
+            if found:
+                fails.append(f"{n}: a staged line holds {found[0]}; name the password-manager item instead "
+                             f"(a false hit: add <!-- {NOT_AN_ID} --> to the line)")
                 break
     return fails
 
@@ -556,6 +675,49 @@ def check_dated_claims(root: Path, files: list[Path]) -> list[str]:
     return warns
 
 
+RULE_BUDGET = 12_000   # words; set your own. The public rules are about 6,000
+
+
+def check_rule_budget(root: Path) -> list[str]:
+    """Check 17 (W): all rule text (root and nested AGENTS.md, skills/*/SKILL.md) over RULE_BUDGET
+    words. Check 5 caps each AGENTS.md, and in the harness study rules then moved into skills:
+    total rule text grew 3.5-fold in 18 days, and again 27 % in 21 days after a hand pass."""
+    files = [p for p in root.rglob("AGENTS.md") if not any(s in p.parts for s in (".git", ".claude", "private"))]
+    files += sorted(root.glob(SKILL_GLOB))
+    words = sum(len(p.read_text(encoding="utf-8", errors="replace").split()) for p in files)
+    if words > RULE_BUDGET:
+        return [f"rule text is {words:,} words (budget {RULE_BUDGET:,}): retire a lesson before adding one "
+                "(logs/lessons.csv, status and retest)"]
+    return []
+
+
+def check_lessons(root: Path) -> list[str]:
+    """Check 18 (W): logs/lessons.csv, the register of lessons. An active row whose anchor is gone
+    from its file, or whose re-test date has passed. Why: nothing signals when a model upgrade
+    makes a lesson obsolete (harness study); skill record says when to add a row."""
+    import csv
+    p = root / "logs" / "lessons.csv"
+    if not p.exists():
+        return []
+    today = time.strftime("%Y-%m-%d")
+    warns, due = [], []
+    with p.open(encoding="utf-8", newline="") as f:
+        for row in csv.DictReader(f):
+            if row.get("status") != "active":
+                continue
+            target = root / (row.get("file") or "")
+            anchor = row.get("anchor") or ""
+            if not target.is_file() or anchor not in target.read_text(encoding="utf-8", errors="replace"):
+                warns.append(f"lessons.csv {row['lesson']}: anchor not found in {row.get('file')}; "
+                             "update the row, or set status gone")
+            if (row.get("retest") or "9999") < today:
+                due.append(row["lesson"])
+    if due:
+        warns.append(f"lessons.csv: re-test due for {len(due)} lesson(s) ({', '.join(due[:8])}"
+                     f"{' ...' if len(due) > 8 else ''}): `make replay`, then set the next retest date")
+    return warns
+
+
 def probe() -> int:
     """Self-check for check 1 (`--probe`): a scratch DEADLINES.md with a past, a today and a
     future row, and one file that names all three dates. Only the future date may be reported."""
@@ -578,7 +740,15 @@ def probe() -> int:
     hits = fails + warns
     ok = len(hits) == 1 and "2–9 Nov 2026" in hits[0]
     print("probe check_dates:", "ok" if ok else f"FAILED {hits}")
-    return 0 if ok else 1
+    # Check 8 identifiers: published test values and made-up numbers only
+    # made-up values, split so this source line is no hit itself
+    planted = ["IBAN DE89" + " 3704 0044 0532 0130 00", "Kundennummer:" + " 12345678", "visa number (`" + "123456789`)",
+               "Aktenzeichen" + " 12 AB 3456/26", "call +49" + " 341 1234567", "passport no." + " C01X00T47"]
+    clean = ["Check 12 runs at 14:30", "commit 769dc91", "Lektion 3, Abschnitt 3C", "costs 1,234 EUR", "the visa number in the 24.09 entry",
+             "the account number is in the password-manager item 'Bank'", "DE89 alone", "Kundennummer" + " 12345678 <!-- lint:not-an-id -->"]
+    miss = [x for x in planted if not identifiers(x)] + [x for x in clean if identifiers(x)]
+    print("probe identifiers:", "ok" if not miss else f"FAILED {miss}")
+    return 0 if ok and not miss else 1
 
 
 # ----------------------------------------------------------------------------- main
@@ -586,8 +756,12 @@ def probe() -> int:
 def main(argv: list[str]) -> int:
     if "--probe" in argv:
         return probe()
+    if "--commit-msg" in argv:
+        return check_message(argv[argv.index("--commit-msg") + 1])
     quiet = "--quiet" in argv
     root = repo_root()
+    if "--scan-ids" in argv:
+        return scan_ids(root)
     files = tracked_md(root)
 
     fails, warns = [], []
@@ -595,6 +769,7 @@ def main(argv: list[str]) -> int:
     fails += f
     warns += w
     fails += check_pointers(root, files)
+    fails += check_heading_pointers(root, files)
     warns += check_stale(root, files)
     fails += check_threats(root, files)
     f, w = check_agents_size(root)
@@ -608,6 +783,8 @@ def main(argv: list[str]) -> int:
     fails += check_scripts_listed(root)
     warns += check_dated_claims(root, files)
     warns += check_log_length(root)
+    warns += check_rule_budget(root)
+    warns += check_lessons(root)
     fails += check_retired(root)
     docs = check_cochange(root)
 

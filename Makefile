@@ -4,7 +4,7 @@
 PY ?= python3
 
 .DEFAULT_GOAL := help
-.PHONY: help check sync sanitise
+.PHONY: help check sync sanitise audit-docs replay
 
 help:  ## list the targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-9s %s\n", $$1, $$2}'
@@ -19,3 +19,9 @@ sync:  ## pull, commit, push now (laptop settings, no 10-minute wait); last log 
 
 sanitise:  ## scan for personal data before a public commit (terms: ~/.config/divan/sanitise-terms.txt)
 	@$(PY) scripts/sanitise.py
+
+audit-docs:  ## monthly read-only doc audit (3 Sonnet runs merged); report in logs/audits/
+	@bash scripts/audit_docs.sh
+
+replay:  ## do lessons still change the agent? make replay [RUNS=10] [MODEL=sonnet] [ONLY="name"]
+	@$(PY) scripts/replay.py "$(HOME)/scratch/divan-replay-$(or $(MODEL),sonnet)" --runs $(or $(RUNS),10) --model $(or $(MODEL),sonnet) $(ONLY)

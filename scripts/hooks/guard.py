@@ -19,6 +19,7 @@ the part that holds when the prose is not read.
 """
 import json
 import re
+import shlex
 import sys
 from pathlib import Path
 
@@ -58,7 +59,149 @@ BLOCK = [
 TEMP_OK = re.compile(r"\brm\s+(-\S+\s+)+(/tmp/|\$TMP|\$TEMP|\$\{?TMPDIR|/sessions/[^ ]*/scratchpad|\S*scratchpad\S*)", re.I)
 
 
+# Each BLOCK pattern is matched against one simple command at a time, rebuilt from shell words,
+# with "^" in front: a quoted mention ("echo 'git reset --hard'", a commit message, a grep) is
+# not a command, and git's global flags (git -C <dir> reset --hard) are dropped first. Both were
+# holes in the harness study (paper Section 5.1). If the shell text cannot
+# be parsed, the whole string is matched as before, so an odd command fails closed.
+WRAPPERS = {"sudo", "doas", "env", "nohup", "time", "command", "exec", "builtin", "nice", "ionice",
+            "timeout", "xargs", "stdbuf", "systemd-run", "watch", "then", "do", "else", "!", "{", "("}
+WRAPPER_ARG = {"-n", "-u", "-g", "-p", "-c", "-I", "-L", "-s", "-k", "--signal", "--property"}
+GIT_GLOBAL_ARG = {"-C", "-c", "--git-dir", "--work-tree", "--namespace", "--exec-path", "--config-env"}
+SHELLS = {"bash", "sh", "zsh", "dash"}
+SEPARATORS = {";", "&&", "||", "|", "&", "|&", ";;"}
+HEREDOC = re.compile(r"<<-?\s*(['\"]?)(\w+)\1[^\n]*\n(.*?)\n\s*\2\s*(\n|$)", re.S)
+
+
+def _strip_heredocs(cmd: str) -> str:
+    """A heredoc body is data fed to a program, not commands; keep only its first line."""
+    return HEREDOC.sub(lambda m: m.group(0).split("\n", 1)[0] + "\n", cmd)
+
+
+def _words(cmd: str) -> list[str]:
+    lex = shlex.shlex(cmd.replace("\\\n", " ").replace("\n", " ; "), posix=True, punctuation_chars=";&|")
+    lex.whitespace_split = True
+    return list(lex)
+
+
+def _commands(cmd: str, depth: int = 0) -> list[str]:
+    """Every simple command in cmd as a word string, wrappers and git globals removed.
+    Raises ValueError when the shell text cannot be parsed."""
+    out, cur = [], []
+    cmd = _strip_heredocs(cmd)
+    words = _words(cmd)
+    for w in words + [";"]:
+        if w in SEPARATORS or set(w) <= set(";&|"):
+            if cur:
+                out += _simple(cur, depth)
+            cur = []
+        else:
+            cur.append(w)
+    for sub in re.findall(r"\$\(([^()]*)\)|`([^`]*)`", cmd):     # command substitution
+        if depth < 3:
+            out += _commands(sub[0] or sub[1], depth + 1)
+    return out
+
+
+def _simple(ws: list[str], depth: int) -> list[str]:
+    ws = list(ws)
+    while ws:
+        w = ws[0]
+        if re.match(r"^[A-Za-z_]\w*=", w) or w in WRAPPERS or re.fullmatch(r"\d+[smhd]?", w):
+            ws.pop(0)
+            while ws and ws[0].startswith("-"):
+                flag = ws.pop(0)
+                if flag in WRAPPER_ARG and ws:
+                    ws.pop(0)
+            continue
+        break
+    if not ws:
+        return []
+    name = ws[0].rsplit("/", 1)[-1]
+    if name in SHELLS and "-c" in ws[1:] and depth < 3:
+        i = ws.index("-c", 1)
+        return _commands(ws[i + 1], depth + 1) if i + 1 < len(ws) else []
+    if name == "find":
+        for i, w in enumerate(ws):
+            if w in ("-exec", "-execdir", "-ok", "-okdir"):
+                rest = ws[i + 1:]
+                end = next((j for j, x in enumerate(rest) if x in (";", "+", "\\;")), len(rest))
+                return [" ".join(ws)] + _simple(rest[:end], depth)
+    if name == "git":
+        rest = ws[1:]
+        while rest and rest[0].startswith("-"):
+            flag = rest.pop(0)
+            if flag in GIT_GLOBAL_ARG and rest:
+                rest.pop(0)
+        ws = ["git"] + rest
+    else:
+        ws = [name] + ws[1:]
+    return [" ".join(ws)]
+
+
+def blocked(cmd: str) -> str | None:
+    """The reason cmd is blocked, or None."""
+    try:
+        units, anchor = _commands(cmd), "^"
+    except ValueError:
+        units, anchor = [cmd], ""                  # unparseable: match the raw text, fail closed
+    for unit in units:
+        for pat, reason in BLOCK:
+            if re.search(f"{anchor}(?:{pat})", unit):
+                if pat.startswith(r"\brm") and TEMP_OK.search(unit):
+                    continue
+                return reason
+    return None
+
+
+# (command, should block). `--probe` runs these; add a case with every change to BLOCK.
+_G, _R, _H, _P, _F = "git", "reset", "--hard", "push", "--force"
+PROBE = [
+    (f"{_G} {_R} {_H}", True),
+    (f"{_G} -C /x {_R} {_H}", True),
+    (f"{_G} -c a=b {_P} {_F}", True),
+    (f"{_G} --git-dir=.git {_R} {_H} HEAD~1", True),
+    (f"cd x && {_G} {_R} {_H}", True),
+    (f"sudo {_G} {_R} {_H}", True),
+    (f"bash -c '{_G} {_R} {_H}'", True),
+    (f"echo $({_G} {_R} {_H})", True),
+    (f"{_G} {_P} origin main {_F}", True),
+    (f"{_G} {_P} -f", True),
+    (f"{_G} clean -fdx", True),
+    (f"{_G} checkout -- .", True),
+    (f"{_G} filter-repo --path x", True),
+    ("rm -rf build", True),
+    ("rm -fr build", True),
+    ("find . -name x -exec rm -rf {} ;", True),
+    ("xargs rm -rf < list", True),
+    ("rm -rf /tmp/x", False),
+    ("rm -rf /tmp/x && rm -rf build", True),
+    ('ssh "$HOST" "sudo userdel bob"', True),
+    ("dd if=/dev/zero of=/dev/sda", True),
+    ("rm -rf 'unclosed", True),                    # unparseable: raw match, fail closed
+    (f"echo '{_G} {_R} {_H} is blocked'", False),
+    (f"{_G} commit -m 'guard: block {_G} {_R} {_H}'", False),
+    (f"grep -n 'rm -rf' scripts/hooks/guard.py", False),
+    (f"python3 - <<'EOF'\nprint('{_G} {_R} {_H}')\nEOF", False),
+    (f"python3 - <<'EOF'\ns = 'see `{_G} -C x {_R} {_H}` in the docs'\nEOF", False),
+    (f"{_G} {_P} origin main", False),
+    (f"{_G} {_R} --soft HEAD~1", False),
+    (f"{_G} -C /x status", False),
+    ("rm notes.txt", False),
+]
+
+
+def probe() -> int:
+    bad = [(c, want) for c, want in PROBE if (blocked(c) is not None) != want]
+    for c, want in bad:
+        print(f"probe guard: FAILED ({'should block' if want else 'should allow'}): {c!r}")
+    print("probe guard:", "ok" if not bad else f"{len(bad)} of {len(PROBE)} failed")
+    return 1 if bad else 0
+
+
 def main() -> int:
+    if "--probe" in sys.argv[1:]:
+        return probe()
     try:
         payload = json.load(sys.stdin)
     except Exception:
@@ -73,16 +216,14 @@ def main() -> int:
         if antigravity:
             print(json.dumps({"decision": "ask"}))
         return 0
-    for pat, reason in BLOCK:
-        if re.search(pat, cmd):
-            if pat.startswith(r"\brm") and TEMP_OK.search(cmd):
-                continue
-            msg = f"blocked by scripts/hooks/guard.py: {reason}"
-            if antigravity:
-                print(json.dumps({"decision": "deny", "reason": msg}))
-                return 0
-            sys.stderr.write(msg + "\n")
-            return 2
+    reason = blocked(cmd)
+    if reason:
+        msg = f"blocked by scripts/hooks/guard.py: {reason}"
+        if antigravity:
+            print(json.dumps({"decision": "deny", "reason": msg}))
+            return 0
+        sys.stderr.write(msg + "\n")
+        return 2
     if antigravity:
         print(json.dumps({"decision": "ask"}))
     return 0

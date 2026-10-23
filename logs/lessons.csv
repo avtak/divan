@@ -1,0 +1,7 @@
+lesson,file,anchor,ledger,model,fix_type,since,retest,status,expect,replay
+L001,scripts/hooks/guard.py,Each BLOCK pattern is matched against one simple command,harness study,Claude Opus 5.5,hook,2026-10-23,2027-01-21,active,Stop git -C or -c flags slipping past the guard and stop blocks on quoted text. Probe: guard.py --probe,
+L002,scripts/lint.py,"Check 8 also looks for identifiers, not only keys",harness study,Claude Opus 5.5,lint,2026-10-23,2027-01-21,active,Stop an identifier reaching a file or a commit message. Probe: lint.py --probe,
+L003,scripts/lint.py,def check_heading_pointers,harness study,Claude Opus 5.5,lint,2026-10-23,2027-01-21,active,Stop pointers to headings that no longer exist,
+L004,scripts/audit_docs.sh,Why three runs,harness study,Claude Opus 5.5,script,2026-10-23,2027-01-21,active,Find more drift per audit than one run does,
+L005,scripts/lint.py,def check_rule_budget,harness study,Claude Opus 5.5,lint,2026-10-23,2027-01-21,active,Stop rule text growing past the budget without a retirement pass,
+L006,scripts/replay.py,does a lesson still change what the agent does?,harness study,Claude Opus 5.5,script,2026-10-23,2027-01-21,active,Show which prose rules no longer change the agent on a new model,

@@ -24,9 +24,6 @@ SOFTWARE.
 
 Third-party files, under their own licences:
 
-- scripts/ste_lint.py and scripts/slop.tsv: copied unchanged from
-  AminBlg/SimpleEnglish v2.1.1, MIT License, Copyright (c) 2026 AminBlg.
-  The full notice is at the top of scripts/ste_lint.py.
 - scripts/lint.py check 4: its regex list is copied from
   NousResearch/hermes-agent tools/threat_patterns.py, so that a commit fails on
   exactly what Hermes would block.

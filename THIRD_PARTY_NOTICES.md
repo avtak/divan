@@ -29,7 +29,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-
-## AminBlg/SimpleEnglish
-
-`scripts/ste_lint.py` and `scripts/slop.tsv` are copied unchanged from https://github.com/AminBlg/SimpleEnglish (v2.1.1). Copyright (c) 2026 AminBlg, MIT License: the full notice is at the top of `scripts/ste_lint.py`.

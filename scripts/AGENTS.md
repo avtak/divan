@@ -16,7 +16,7 @@
 
 **`.sync-message`.** An agent writes a one-line `.sync-message` in the repo root. The sync uses its first line as the commit message and deletes the file. If it is absent, the message is `<prefix>: sync <changed paths>` (`DIVAN_PREFIX`, default the role). It is gitignored. For a commit with a body, write a `.commit-*.txt` and use `git commit -F`.
 
-**`scripts/hooks/pre-commit`** runs `scripts/lint.py` on every commit. The lint refuses any `CLAUDE.md` or `CLAUDE.local.md`, because with one present Claude Code ignores `AGENTS.md`. `setup.sh` enables the hook with `git config core.hooksPath scripts/hooks`.
+**`scripts/hooks/pre-commit`** runs `scripts/lint.py` on every commit. The lint refuses any `CLAUDE.md` or `CLAUDE.local.md`, because with one present Claude Code ignores `AGENTS.md`. `setup.sh` enables the hook with `git config core.hooksPath scripts/hooks`. `scripts/hooks/commit-msg` runs the same secret and identifier patterns on the commit message, because a message stays in git history like a file.
 
 ## Who writes what
 

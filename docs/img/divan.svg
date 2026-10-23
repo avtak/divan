@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- divan: an open book on an orange tile. -->
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FF8A4C"/>
+      <stop offset="1" stop-color="#E8561A"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".25" cy=".1" r=".8">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#tile)"/>
+  <rect width="512" height="512" rx="112" fill="url(#glow)"/>
+  <!-- cover shadow -->
+  <path d="M96 172c56-18 112-12 160 18 48-30 104-36 160-18v196c-56-18-112-12-160 18-48-30-104-36-160-18z" fill="#B8410F" opacity=".45" transform="translate(0 14)"/>
+  <!-- pages -->
+  <path d="M96 164c56-18 112-12 160 18v200c-48-30-104-36-160-18z" fill="#FFF6EE"/>
+  <path d="M416 164c-56-18-112-12-160 18v200c48-30 104-36 160-18z" fill="#FFEBDD"/>
+  <!-- spine -->
+  <path d="M256 182v200" stroke="#E8561A" stroke-width="8" stroke-linecap="round"/>
+  <!-- text lines -->
+  <g stroke="#F2A578" stroke-width="12" stroke-linecap="round">
+    <path d="M132 214c30-6 62-4 92 8"/>
+    <path d="M132 254c30-6 62-4 92 8"/>
+    <path d="M132 294c30-6 62-4 92 8"/>
+    <path d="M288 222c30-12 62-14 92-8"/>
+    <path d="M288 262c30-12 62-14 92-8"/>
+    <path d="M288 302c30-12 46-13 62-11"/>
+  </g>
+  <!-- ribbon bookmark -->
+  <path d="M352 150v58l16-13 16 13v-58z" fill="#17171B"/>
+</svg>

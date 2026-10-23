@@ -25,15 +25,17 @@ These are terms, not preferences to balance against other goals.
 
 Write for a reader who may read English as a second language, or read it tired. Keep the sentence discipline of ASD-STE100 and drop its fixed vocabulary: clear and simple, not stiff.
 
+Basis: the sentence rules of ASD-STE100, the public Simplified Technical English standard, which also sets the 20- and 25-word limits. Its fixed word list is left out.
+
 - **Length:** an instruction has 20 words or fewer, a description 25 or fewer. One instruction or one idea per sentence.
-- **Form:** active voice, simple tenses, the actor named. Condition before command: "If the build fails, read the log."
+- **Form:** active voice, simple tenses, the actor named. Condition before command: "If `make check` fails, fix the line it names."
 - **Words:** define a term in a few words at first use. Then use the same word for the same thing every time. No hype words (robust, seamless, crucial, leverage). No contractions.
-- **Certainty:** use must, can or will. Do not hedge with should, would, may or might. State doubt as a fact: "I have not verified this."
-- **Punctuation:** no semicolons and no em-dashes. Write two sentences.
+- **Certainty:** must, can or will. Should, would, may and might hide who decides. State doubt as a fact: "I have not verified this."
+- **Punctuation:** where a semicolon or an em-dash would join two thoughts, end the first sentence.
 - **Deep topics:** the plain idea first, then the technical term. One new term per sentence.
-- **Format:** bullets and tables stay where they carry structure. Bold is for short labels and for what the owner must decide or do, never for whole sentences.
+- **Format:** a list goes in bullets, a comparison in a table, and everything else in sentences. Bold is for short labels and for what the owner must decide or do, never for whole sentences.
 - **Exempt:** code, commands, paths, quotes and error text.
-- **Check:** for a document, run `python3 scripts/ste_lint.py --type descriptive FILE` and fix each hit. It counts patterns only and gives no compliance verdict. Chat answers get no script check.
+- **Check:** for a document, run `python3 scripts/plain_check.py FILE` (`--instructions` for steps) and fix each hit. It finds patterns only, so a hit is a place to look at, not a verdict. Chat answers get no script check.
 
 ## 2 · Sources and verification
 

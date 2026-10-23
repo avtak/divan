@@ -39,6 +39,8 @@ One entry goes in one log, where its centre of gravity is. Never duplicate it ac
 
 State the rule in one sentence. The story stays in the log.
 
+Then add a row to `logs/lessons.csv`: where the lesson lives, an exact anchor phrase, the log entry, the model in use, and in `expect` what it should stop and how to see that. A new code check also adds one passing and one failing case to its `--probe`. Why: lessons outlive their failures, and only a recorded model and prediction let a later replay (`make replay`) retire them.
+
 **Coupled files.** `make check` names the file and line when a skill, a skill count or a script is missing from the docs that list them. It cannot judge whether a description is still true: read each doc that describes what you changed (`README.md`, `skills/README.md`, `scripts/AGENTS.md`) and fix it in the same commit. In Claude Code, `scripts/hooks/coupled.py` names those docs right after the edit.
 
 ## B. Something happened to the owner: the diary

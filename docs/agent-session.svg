@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 580" width="1040" height="580" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
+<title id="t">An agent&#x27;s session in divan</title><desc id="d">Session start hook, always-loaded files, git pull and working-terms, the task with skills, three hooks while working, make check, the record, commit and push, and the server sync.</desc>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#444441"/></marker></defs>
+<rect width="1040" height="580" fill="#FFFFFF"/>
+<text x="24" y="36" font-size="21" font-weight="700" fill="#2C2C2A">An agent&#x27;s session in divan</text>
+<text x="24" y="58" font-size="13" fill="#5F5E5A">What runs by itself, and what the agent does, from start to sync.</text>
+<rect x="24" y="84" width="226" height="104" rx="10" fill="#FAEEDA" stroke="#854F0B" stroke-width="1.5"/>
+<text x="38" y="108" font-size="14" font-weight="700" fill="#633806">Session start</text>
+<text x="38" y="129" font-size="12" fill="#5A3A10">hook context.py:</text>
+<text x="38" y="146" font-size="12" fill="#5A3A10">due DEADLINES rows,</text>
+<text x="38" y="163" font-size="12" fill="#5A3A10">[FOCUS-GUARD]</text>
+<rect x="278" y="84" width="226" height="104" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.5"/>
+<text x="292" y="108" font-size="14" font-weight="700" fill="#0C447C">Always loaded</text>
+<text x="292" y="129" font-size="12" fill="#1F3B57">AGENTS.md</text>
+<text x="292" y="146" font-size="12" fill="#1F3B57">+ 5 skill descriptions</text>
+<rect x="532" y="84" width="226" height="104" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.5"/>
+<text x="546" y="108" font-size="14" font-weight="700" fill="#0C447C">Before the first answer</text>
+<text x="546" y="129" font-size="12" fill="#1F3B57">git pull --rebase</text>
+<text x="546" y="146" font-size="12" fill="#1F3B57">skill working-terms</text>
+<rect x="786" y="84" width="230" height="104" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.5"/>
+<text x="800" y="108" font-size="14" font-weight="700" fill="#0C447C">The task</text>
+<text x="800" y="129" font-size="12" fill="#1F3B57">a skill starts (Skill tool</text>
+<text x="800" y="146" font-size="12" fill="#1F3B57">in Claude Code); the agent</text>
+<text x="800" y="163" font-size="12" fill="#1F3B57">reads and edits</text>
+<rect x="24" y="228" width="992" height="142" rx="10" fill="#FAEEDA" stroke="#854F0B" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text x="38" y="252" font-size="14" font-weight="700" fill="#633806">While working, hooks run by themselves (Claude Code)</text>
+<rect x="44" y="264" width="300" height="92" rx="10" fill="#FFFFFF" stroke="#3B6D11" stroke-width="1.5"/>
+<text x="58" y="288" font-size="13" font-weight="700" fill="#27500A">guard.py · before a shell command</text>
+<text x="58" y="309" font-size="12" fill="#2E4419">blocks Tier 3: reset --hard,</text>
+<text x="58" y="326" font-size="12" fill="#2E4419">force-push, rm -rf</text>
+<rect x="370" y="264" width="300" height="92" rx="10" fill="#FFFFFF" stroke="#3B6D11" stroke-width="1.5"/>
+<text x="384" y="288" font-size="13" font-weight="700" fill="#27500A">coupled.py · after Edit or Write</text>
+<text x="384" y="309" font-size="12" fill="#2E4419">names the docs to update</text>
+<text x="384" y="326" font-size="12" fill="#2E4419">(lint&#x27;s COUPLED map)</text>
+<rect x="696" y="264" width="300" height="92" rx="10" fill="#FFFFFF" stroke="#3B6D11" stroke-width="1.5"/>
+<text x="710" y="288" font-size="13" font-weight="700" fill="#27500A">handover.py · on each prompt</text>
+<text x="710" y="309" font-size="12" fill="#2E4419">one line from 700k tokens;</text>
+<text x="710" y="326" font-size="12" fill="#2E4419">the owner decides about /compact</text>
+<rect x="786" y="410" width="230" height="104" rx="10" fill="#EAF3DE" stroke="#3B6D11" stroke-width="1.5"/>
+<text x="800" y="434" font-size="14" font-weight="700" fill="#27500A">make check</text>
+<text x="800" y="455" font-size="12" fill="#2E4419">lint, 18 checks</text>
+<text x="800" y="472" font-size="12" fill="#2E4419">(also the pre-commit hook)</text>
+<rect x="532" y="410" width="226" height="104" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.5"/>
+<text x="546" y="434" font-size="14" font-weight="700" fill="#0C447C">Record</text>
+<text x="546" y="455" font-size="12" fill="#1F3B57">skill record: log or diary;</text>
+<text x="546" y="472" font-size="12" fill="#1F3B57">a repeatable mistake</text>
+<text x="546" y="489" font-size="12" fill="#1F3B57">becomes a rule</text>
+<rect x="278" y="410" width="226" height="104" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.5"/>
+<text x="292" y="434" font-size="14" font-weight="700" fill="#0C447C">Commit + push</text>
+<text x="292" y="455" font-size="12" fill="#1F3B57">a real message; rule edits</text>
+<text x="292" y="472" font-size="12" fill="#1F3B57">need the owner&#x27;s yes first</text>
+<rect x="24" y="410" width="226" height="104" rx="10" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="1.5"/>
+<text x="38" y="434" font-size="14" font-weight="700" fill="#2C2C2A">Sync</text>
+<text x="38" y="455" font-size="12" fill="#444441">other machines pull</text>
+<text x="38" y="472" font-size="12" fill="#444441">on their own timer</text>
+<path d="M250,136 L276,136" fill="none" stroke="#444441" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M504,136 L530,136" fill="none" stroke="#444441" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M758,136 L784,136" fill="none" stroke="#444441" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M900,188 L900,226" fill="none" stroke="#444441" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M900,370 L900,408" fill="none" stroke="#444441" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M786,462 L760,462" fill="none" stroke="#444441" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M532,462 L506,462" fill="none" stroke="#444441" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M278,462 L252,462" fill="none" stroke="#444441" stroke-width="1.6" marker-end="url(#a)"/>
+<text x="24" y="548" font-size="12" fill="#5F5E5A">Monthly: make audit-docs (three Sonnet runs, read-only, merged) writes logs/audits/&lt;date&gt;.md.</text>
+</svg>
