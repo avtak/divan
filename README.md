@@ -10,7 +10,7 @@ divan grew out of one person's job search, language study and life admin, run wi
 
 divan was the subject of a six-week study of its own harness: 118 agent failures, a test of how much stale documentation an LLM audit finds, and a replay of past failures with and without their fixes. Two results changed divan. On a current model, three of four replayed failures did not happen even without their fix, so lessons can outlive the failures they were written for. Stale documentation was the largest failure class (48 of 118), and one audit run found only about half of it. divan now records every lesson with its model and a re-test date (`logs/lessons.csv`), replays lessons to find the ones that can retire (`make replay`), and adds code checks where drift slipped through.
 
-The page: [Lessons Outlive Their Failures](https://avtak.github.io/divan/lessons-outlive-their-failures.html). The paper: *Lessons Outlive Their Failures: A Case Study of Rules for AI Coding Agents*, preprint, arXiv cs.SE, October 2026. The full citation and the arXiv link follow once the preprint is announced.
+The page: [Lessons Outlive Their Failures](https://avtak.github.io/divan/lessons-outlive-their-failures.html). The paper: *Lessons Outlive Their Failures: A Case Study of Rules for AI Coding Agents*, preprint, arXiv cs.SE, October 2026. Citation: at the end of this README.
 
 ## Pages and diagrams
 
@@ -161,3 +161,22 @@ Hermes also needs `shell-hooks-allowlist.json` in its home folder with the same 
 MIT for everything here (`LICENSE`). Lint check 4 copies its regexes from NousResearch/hermes-agent (MIT). The notice: `THIRD_PARTY_NOTICES.md`.
 
 The plain-English rules in skill `working-terms` paraphrase the sentence rules of ASD-STE100 in their own words. The repo reproduces no text from the specification or its dictionary. divan is an unofficial project, not affiliated with or endorsed by ASD or STEMG. ASD-STE100 is a registered trademark of ASD.
+
+## Citation
+
+divan was the subject of this study:
+
+Hassan Hassanzadeh Aliabadi. *Lessons Outlive Their Failures: A Case Study of Rules for AI Coding Agents.* Preprint, arXiv cs.SE, October 2026. arXiv:XXXX.XXXXX.
+
+The study measured the private divan that this template comes from. Release 0, the first commit of this repository (15.10.2026), is the public template as it was when the study ended. Release 1 adds what the study found.
+
+```bibtex
+@misc{hassanzadehaliabadi2026lessons,
+  author        = {Hassanzadeh Aliabadi, Hassan},
+  title         = {Lessons Outlive Their Failures: A Case Study of Rules for {AI} Coding Agents},
+  year          = {2026},
+  eprint        = {XXXX.XXXXX},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.SE}
+}
+```
