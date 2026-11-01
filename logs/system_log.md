@@ -8,5 +8,6 @@ Newest entries at the top, directly under `## Log`. Format and rules: skill `rec
 
 ## Log
 
+- **02.11.2026**: **arXiv link added.** README citation, BibTeX (`eprint`, `doi`, `url`) and the page's Cite box now carry arXiv:2610.32578, DOI 10.48550/arXiv.2610.32578. Closes the 23.10 Owed.
 - **23.10.2026**: **Lessons from the harness study (`docs/lessons-outlive-their-failures.html`).** `guard.py` reads shell words (catches git global flags before reset, allows quoted mentions; `--probe`). Lint check 8 adds identifiers and a `commit-msg` hook, check 16 heading pointers, check 17 a rule budget, check 18 the lesson register `logs/lessons.csv`. `make audit-docs` runs three times and merges. `make replay` retires lessons that no longer change the agent. **Owed:** the arXiv link once announced.
 - **DD.MM.YYYY**: **Started from divan Release 0.** Hooks, lint, sync and five skills installed with `setup.sh`.
