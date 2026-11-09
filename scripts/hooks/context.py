@@ -19,7 +19,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
-HEADER = "Session context (scripts/hooks/context.py, from DEADLINES.md):\n"
+HEADER = ("Session context (scripts/hooks/context.py, from DEADLINES.md). Background only: answer what the owner asks. "
+          "Do not raise these dates unless the owner asks what is next or the task needs one.\n")
 SOON_DAYS = 7
 DONE = re.compile(r"^\W*(done|closed|resolved)\b", re.I)
 
@@ -86,12 +87,14 @@ def briefing(today: datetime.date | None = None) -> str:
         if days <= SOON_DAYS:
             open_rows.append((days, f"- {when} | {day_phrase(days)}\n> {what}"))
             if days >= 0:
-                soon.append(f"{when} | {day_phrase(days)}: {what[:65]}")
+                soon.append((days, f"{when} | {day_phrase(days)}"))
     out = [HEADER, f"Today: {today:%A %d.%m.%Y}\n"]
     if soon:
-        out.append("\n[FOCUS-GUARD] Open deadline(s) within 7 days: " + " ; ".join(soon) +
-                   "\nIf the owner asks for non-essential tooling or infrastructure work, trigger "
-                   "skills/focus-guard/SKILL.md.\n")
+        # A count and the nearest date only: the rows are listed in full below. Why: a repeated list
+        # cut mid-word made every tooling request look like a trigger.
+        out.append(f"\n[FOCUS-GUARD] {len(soon)} open deadline(s) within 7 days, nearest {min(soon)[1]} (rows below).\n"
+                   "If the owner drifts into tooling they did not ask for, or asks what to do next, use "
+                   "skills/focus-guard/SKILL.md. If the owner asks for something explicitly, just do it.\n")
     if open_rows:
         out.append("\n* OVERDUE AND THIS WEEK\n" + "\n".join(r for _, r in sorted(open_rows)) + "\n")
     else:

@@ -5,3 +5,5 @@ L003,scripts/lint.py,def check_heading_pointers,harness study,Claude Opus 5.5,li
 L004,scripts/audit_docs.sh,Why three runs,harness study,Claude Opus 5.5,script,2026-10-23,2027-01-21,active,Find more drift per audit than one run does,
 L005,scripts/lint.py,def check_rule_budget,harness study,Claude Opus 5.5,lint,2026-10-23,2027-01-21,active,Stop rule text growing past the budget without a retirement pass,
 L006,scripts/replay.py,does a lesson still change what the agent does?,harness study,Claude Opus 5.5,script,2026-10-23,2027-01-21,active,Show which prose rules no longer change the agent on a new model,
+L007,skills/focus-guard/SKILL.md,An explicit instruction is not a trigger.,daily use,Claude Opus 5.5,rule,2026-10-24,2027-01-22,active,Stop the guard blocking a task the owner explicitly asked for,
+L008,skills/working-terms/SKILL.md,Answer only what the owner asked.,daily use,Claude Opus 5.5,rule,2026-11-05,2027-02-03,active,Stop unasked deadlines and reminders in an answer,

@@ -602,6 +602,9 @@ COUPLED = (
      "the safety gates"),
     (r"^setup\.sh$", ("START_HERE.md", "README.md"), "the install steps"),
     (r"^Makefile$", ("README.md",), "the make commands"),
+    (r"^skills/[^/]+/SKILL\.md$",
+     ("AGENTS.md", "README.md", "skills/README.md", "skills/context-layers.svg"),
+     "the skill lists and counts (a new or renamed skill)"),
 )
 
 

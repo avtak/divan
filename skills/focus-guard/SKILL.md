@@ -1,6 +1,6 @@
 ---
 name: focus-guard
-description: "Stops the agent before it helps the owner avoid the work that moves their life: the priorities in ABOUT_ME.md and the dated obligations in DEADLINES.md. Use when the owner proposes setting up a local model, trying a new tool, cloning a repo or tuning the machine while a deadline is close, when they say they are stuck or ask 'what should we do next', or when the session-start [FOCUS-GUARD] alert is present."
+description: "Stops the agent before it helps the owner avoid the work that moves their life: the priorities in ABOUT_ME.md and the dated obligations in DEADLINES.md. Use when the owner proposes setting up a local model, trying a new tool, cloning a repo or tuning the machine while a deadline is close, when they say they are stuck or ask 'what should we do next', or when the session-start [FOCUS-GUARD] alert is present and the session drifts into tooling. An explicit instruction ('install X', 'do it') is done as asked, with no deadline named."
 ---
 
 # focus-guard
@@ -9,9 +9,11 @@ Under stress or deadline pressure, many builders escape into building: new tools
 
 ## When it fires
 
-1. The owner asks to install, research, benchmark or explore a tool, library, model or repo that meets no close dated obligation and serves no priority in `ABOUT_ME.md`.
+**An explicit instruction is not a trigger.** When the owner tells you to do something, do it. Do not name a deadline, stop, ask, or offer a micro-step. Why: the guard once stopped an install the owner had already decided on, and unasked deadlines in answers made the owner stop opening the deadline list.
+
+1. The owner floats installing, researching, benchmarking or exploring a tool, library, model or repo that meets no close dated obligation and serves no priority in `ABOUT_ME.md`.
 2. The owner says they are stuck, unmotivated or overwhelmed, or asks "what should we do next?".
-3. The `[FOCUS-GUARD]` alert is present and the owner is working on tooling or infrastructure that is not essential.
+3. The `[FOCUS-GUARD]` alert is present and the session drifts into tooling or infrastructure the owner did not ask for.
 
 ## What to do
 

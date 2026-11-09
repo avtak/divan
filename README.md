@@ -4,7 +4,7 @@
 
 A personal system of record that AI coding agents can work in safely. Plain markdown in git, a set of rules every agent loads, and hooks and a lint that hold when the agent does not read the rules.
 
-divan grew out of one person's job search, language study and life admin, run with Claude Code, Antigravity and Hermes on a laptop and a small server. This repo is its **governance layer**: the part that is not about that person. Release 0 holds the hooks, the lint, the git sync and five skills. You bring the content.
+divan grew out of one person's job search, language study and life admin, run with Claude Code, Antigravity and Hermes on a laptop and a small server. This repo is its **governance layer**: the part that is not about that person. It holds the hooks, the lint, the git sync, the lesson register and five skills. You bring the content.
 
 ## Lessons outlive their failures
 
@@ -151,10 +151,12 @@ Hermes also needs `shell-hooks-allowlist.json` in its home folder with the same 
 | `scripts/hooks/context.py`, `guard.py`, `coupled.py`, `handover.py`, `pre-commit`, `commit-msg` | The hooks above |
 | `scripts/systemd/` | User units for the laptop timer and the server watcher |
 
-## Roadmap
+## Releases and roadmap
 
-- **Release 1:** a deadline and status board, a standup message, a JSON application store with one command to record an application, and the job-search skills as templates.
-- **Release 2:** an example lead pipeline, and a guide to running Hermes on a server.
+- **Release 0** (15.10.2026): rules, hooks, lint, sync and five skills.
+- **Release 1** (23.10.2026): what the harness study found. The lesson register, the replay, the three-run audit and lint checks 16 to 18.
+- **Release 2** (09.11.2026): lessons from daily use. `focus-guard` does not stop an explicit instruction. Sessions answer only what the owner asked.
+- **Planned:** a deadline and status board, a standup message, a JSON application store with one command to record an application, and the job-search skills as templates. After that, an example lead pipeline, and a guide to running Hermes on a server.
 
 ## Licence and credits
 
